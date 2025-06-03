@@ -1,0 +1,34 @@
+{
+  "name": "monorepo",
+  "version": "1.0.0",
+  "description": "A monorepo with .NET Core and React TypeScript",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*",
+    "tools/*"
+  ],  "scripts": {
+    "build": "nx run-many --target=build --projects=api,web",
+    "test": "nx run-many --target=test --projects=api,web",
+    "dev": "nx run-many --target=serve --projects=api,web --parallel",
+    "dev:api": "nx serve api",
+    "dev:web": "nx serve web",
+    "dev:clean": "pwsh -Command \"Get-Process -Name 'dotnet','node' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host 'Cleaned up development processes'\"",
+    "dev:start": "pnpm run dev:clean && pnpm run dev",
+    "lint": "nx run-many --target=lint --projects=web",
+    "format": "prettier --write .",
+    "clean": "nx reset && rimraf node_modules apps/*/node_modules libs/*/node_modules"
+  },
+  "devDependencies": {
+    "@nx/js": "^17.2.8",
+    "@nx/workspace": "^17.2.8",
+    "@nx/web": "^17.2.8",
+    "@nx/vite": "^17.2.8",
+    "@nx/react": "^17.2.8",
+    "nx": "^17.2.8",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

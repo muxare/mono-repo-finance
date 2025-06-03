@@ -1,0 +1,42 @@
+{
+  "name": "api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/api/Api",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet build",
+        "cwd": "apps/api/Api"
+      },
+      "configurations": {
+        "production": {
+          "command": "dotnet build -c Release",
+          "cwd": "apps/api/Api"
+        }
+      }
+    },    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet run --launch-profile https",
+        "cwd": "apps/api/Api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet test",
+        "cwd": "apps/api/Api"
+      }
+    },
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet clean",
+        "cwd": "apps/api/Api"
+      }
+    }
+  },
+  "tags": ["type:app", "platform:dotnet"]
+}
