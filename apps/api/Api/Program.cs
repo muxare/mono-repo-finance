@@ -1,7 +1,10 @@
 using Api.Data;
 using Api.Services;
 using Api.Middleware;
+using Api.Hubs;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
+using Hangfire.Storage.SQLite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +61,31 @@ builder.Services.AddScoped<IStockService, StockService>();
 builder.Services.AddScoped<IStockPriceService, StockPriceService>();
 builder.Services.AddScoped<ISectorService, SectorService>();
 builder.Services.AddScoped<IExchangeService, ExchangeService>();
+
+// Add data import services
+builder.Services.AddScoped<IDataValidationService, DataValidationService>();
+builder.Services.AddScoped<IDataImportService, CsvDataImportService>();
+builder.Services.AddScoped<IJsonDataImportService, JsonDataImportService>();
+builder.Services.AddScoped<IBackupService, BackupService>();
+builder.Services.AddScoped<IImportJobService, ImportJobService>();
+
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Add Hangfire
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Data Source=FinanceScreener.db";
+
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSQLiteStorage(connectionString));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.Queues = new[] { "default", "imports" };
+});
 
 // Add CORS policy for the frontend
 builder.Services.AddCors(options =>
@@ -120,6 +148,16 @@ app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
+// Add Hangfire dashboard for development
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseHangfireDashboard("/hangfire");
+// }
+
 app.MapControllers();
+
+// Map SignalR hubs
+app.MapHub<ImportProgressHub>("/hubs/import-progress");
 
 app.Run();
