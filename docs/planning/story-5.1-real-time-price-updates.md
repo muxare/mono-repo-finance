@@ -16,7 +16,9 @@ High
 
 ## Dependencies
 - Story 1.2: Financial Data API Endpoints (for price data structure)
-- Story 2.1: Candlestick Chart Component (for chart updates)
+- Story 2.1.1: Context API Data Management (for state management)
+- Story 2.1.2: Backend Request Infrastructure (for API client integration)
+- Story 2.1.3: D3.js Candlestick Chart Component (for chart updates)
 - Story 3.1: Stock Search & Symbol Management (for stock list updates)
 
 ---

@@ -199,7 +199,7 @@ Date,Open,High,Low,Close,Volume,OpenInt
 ## 🔗 Dependencies
 - **Prerequisites**: Story 1.1 (Database Design) must be complete
 - **Related**: Story 1.2 (API Endpoints) for import status API
-- **Follows**: Story 2.1 (Charts) will consume imported data
+- **Follows**: Stories 2.1.1-2.1.3 (Chart Architecture) will consume imported data
 
 ---
 
@@ -307,4 +307,4 @@ The Data Import Service is now fully functional and production-ready with:
 - Complete API documentation
 - Clean, maintainable codebase
 
-**Next Steps**: The system is ready for Story 2.1 (Candlestick Chart Component) which will consume the imported financial data for visualization.
+**Next Steps**: The system is ready for the chart architecture stories (2.1.1-2.1.3) which will consume the imported financial data for visualization.

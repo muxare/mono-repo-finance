@@ -17,7 +17,9 @@ High
 ## Dependencies
 - All previous stories (testing infrastructure spans entire application)
 - Story 5.1: Real-time Price Updates (for testing WebSocket functionality)
-- Story 2.1: Candlestick Chart Component (for testing chart components)
+- Story 2.1.1: Context API Data Management (for testing state management)
+- Story 2.1.2: Backend Request Infrastructure (for testing API client)
+- Story 2.1.3: D3.js Candlestick Chart Component (for testing chart components)
 
 ---
 

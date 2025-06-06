@@ -107,30 +107,64 @@ Build a comprehensive finance screener application with real-time candlestick ch
 - Production-ready with clean build and runtime verification
 - All acceptance criteria and technical tasks completed
 
-### Epic 2: Frontend Chart Components & Visualization
-**Goal**: Create interactive and responsive financial chart components
+#### 📋 [Story 1.4: Data Calculation Service](./story-1.4-data-calculation-service.md) - **NEW**
+- **As a** frontend developer
+- **I want** pre-calculated financial metrics and indicators from the backend
+- **So that** I can display real-time data efficiently without client-side computation overhead
 
-#### 📊 [Story 2.1: Candlestick Chart Component](./story-2.1-candlestick-chart-component.md)
-- **As a** user
-- **I want** interactive candlestick charts
-- **So that** I can analyze stock price movements over time
+**Priority**: High | **Story Points**: 8 | **Sprint**: 2
 
 **Acceptance Criteria:**
-- [ ] Responsive candlestick chart with proper OHLC visualization
-- [ ] Interactive features: zoom, pan, crosshair cursor
-- [ ] Multiple timeframe support (1D, 1W, 1M, 3M, 6M, 1Y, All)
-- [ ] Volume bars below price chart
-- [ ] Real-time price updates
-- [ ] Mobile-responsive design
+- [ ] Calculate price changes and percentage changes server-side
+- [ ] Compute technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands)
+- [ ] Generate time-series aggregations (daily, weekly, monthly views)
+- [ ] Provide statistical calculations (volatility, correlation, beta)
+- [ ] Cache calculations for performance optimization
+- [ ] Support real-time calculation updates
 
 **Technical Tasks:**
-- [ ] Research and choose charting library (TradingView Charting Library, Chart.js, D3.js, or Recharts)
-- [ ] Create `CandlestickChart.tsx` component
-- [ ] Implement data transformation utilities
-- [ ] Add chart customization options (colors, themes)
-- [ ] Create `VolumeChart.tsx` component
-- [ ] Implement responsive chart sizing
-- [ ] Add loading and error states
+- [ ] Create `PriceCalculationService.cs` for basic price metrics
+- [ ] Create `TechnicalIndicatorService.cs` for indicators (SMA, EMA, RSI, MACD, Bollinger Bands)
+- [ ] Create `StatisticalAnalysisService.cs` for volatility, correlation, beta calculations
+- [ ] Implement background calculation jobs with Redis caching
+- [ ] Extend API endpoints to serve pre-calculated data
+- [ ] Add WebSocket notifications for real-time calculation updates
+
+### Epic 2: Frontend Chart Components & Visualization
+**Goal**: Create interactive and responsive financial chart components using D3.js and React
+
+#### 📊 Story 2.1: Interactive Chart Architecture - **REFINED INTO SUB-STORIES**
+
+##### 🔧 [Story 2.1.1: Context API Data Management](./story-2.1.1-context-api-data-management.md) - **NEW**
+- **As a** React developer
+- **I want** a robust Context API setup for managing financial data state
+- **So that** chart components can efficiently access and update stock data without prop drilling
+
+**Priority**: High | **Story Points**: 5 | **Sprint**: 3 | **Dependencies**: Story 1.4
+
+##### 🌐 [Story 2.1.2: Backend Request Infrastructure](./story-2.1.2-backend-request-infrastructure.md) - **NEW**
+- **As a** frontend developer
+- **I want** a robust, type-safe API client infrastructure
+- **So that** I can efficiently fetch financial data with proper error handling and caching
+
+**Priority**: High | **Story Points**: 6 | **Sprint**: 3 | **Dependencies**: Story 1.4, Story 2.1.1
+
+##### 📈 [Story 2.1.3: D3.js Candlestick Chart Component](./story-2.1.3-d3js-candlestick-chart.md) - **NEW**
+- **As a** trader/investor
+- **I want** professional-grade D3.js candlestick charts following Swizec Teller's React+D3 integration pattern
+- **So that** I can analyze stock price movements with smooth, responsive, and highly customizable visualizations
+
+**Priority**: High | **Story Points**: 8 | **Sprint**: 4 | **Dependencies**: Story 2.1.1, Story 2.1.2, Story 1.4
+
+**Combined Epic Acceptance Criteria:**
+- [ ] Context API state management with TypeScript interfaces
+- [ ] Axios-based API client with React Query for server state
+- [ ] D3.js + React integration following Swizec Teller's pattern
+- [ ] Real-time candlestick chart rendering with D3.js transitions
+- [ ] Interactive features (zoom, pan, crosshair) using d3-zoom
+- [ ] Technical indicators overlay (pre-calculated from Story 1.4)
+- [ ] WebSocket real-time updates with cache invalidation
+- [ ] Performance optimized for 1000+ data points at 60fps
 
 #### 📈 [Story 2.2: Real-time Data Updates](./story-2.2-real-time-data-updates.md)
 - **As a** trader

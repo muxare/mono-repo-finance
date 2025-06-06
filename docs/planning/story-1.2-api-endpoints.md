@@ -261,7 +261,9 @@ public async Task<ActionResult<PagedResult<StockSummaryDto>>> GetStocks(
 ## 🔗 Dependencies
 - **Upstream**: Story 1.1 (Database Design & Entity Framework Setup)
 - **Downstream**: 
-  - Story 2.1: Candlestick Chart Component
+  - Story 2.1.1: Context API Data Management
+  - Story 2.1.2: Backend Request Infrastructure
+  - Story 2.1.3: D3.js Candlestick Chart Component
   - Story 3.1: Stock Search & Filter
 
 ## 📋 Definition of Done

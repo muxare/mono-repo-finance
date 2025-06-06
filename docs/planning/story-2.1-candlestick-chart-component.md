@@ -1,26 +1,50 @@
-# Story 2.1: Candlestick Chart Component
+# Story 2.1: D3.js React Candlestick Chart Component
 
-## 📋 Story Overview
-**As a** trader/investor  
-**I want** interactive candlestick charts with technical indicators  
-**So that** I can analyze stock price movements and make informed decisions
+## ⚠️ **SUPERSEDED BY SUB-STORIES**
+**This story has been refined and split into three detailed sub-stories for better project management and implementation clarity:**
+
+- **[Story 2.1.1: Context API Data Management](./story-2.1.1-context-api-data-management.md)** - State management setup
+- **[Story 2.1.2: Backend Request Infrastructure](./story-2.1.2-backend-request-infrastructure.md)** - API client and data fetching
+- **[Story 2.1.3: D3.js Candlestick Chart Component](./story-2.1.3-d3js-candlestick-chart.md)** - Chart visualization implementation
+
+**Please refer to the individual sub-stories above for current planning and implementation details.**
 
 ---
 
-## 🎯 Acceptance Criteria
+## 📋 Original Story Overview
+**As a** trader/investor  
+**I want** interactive candlestick charts built with D3.js and React following Swizec Teller's approach  
+**So that** I can analyze stock price movements with high-performance, custom visualizations
+
+---
+
+## 🎯 User Story
+**As a** trader/investor  
+**I want** professional-grade candlestick charts with technical indicators  
+**So that** I can perform detailed technical analysis with smooth, responsive interactions
+
+## 📝 Acceptance Criteria
+
+### D3.js + React Integration (Swizec Teller Pattern)
+- [ ] Implement React component wrapper with D3.js rendering engine
+- [ ] Use React for state management and lifecycle, D3 for DOM manipulation
+- [ ] Custom hooks for D3 chart logic separation
+- [ ] TypeScript integration for type-safe D3 operations
+- [ ] Responsive design with automatic resize handling
 
 ### Core Chart Features
-- [ ] Real-time candlestick chart rendering with smooth animations
-- [ ] Interactive zoom and pan capabilities with touch/mouse support
-- [ ] Multiple timeframes (1D, 1W, 1M, 3M, 6M, 1Y, ALL)
-- [ ] Volume overlay with synchronized scaling
-- [ ] Crosshair with price/time tooltip display
+- [ ] Real-time candlestick chart rendering with D3.js transitions
+- [ ] Interactive zoom and pan using d3-zoom
+- [ ] Multiple timeframes (1D, 1W, 1M, 3M, 6M, 1Y, ALL) with smooth transitions
+- [ ] Volume overlay with synchronized D3 scales
+- [ ] Custom crosshair implementation with d3-selection
+- [ ] Tooltip system using D3.js positioning and React portals
 
-### Technical Indicators
-- [ ] Moving Averages (SMA, EMA) with customizable periods
-- [ ] RSI (Relative Strength Index) with overbought/oversold levels
-- [ ] MACD (Moving Average Convergence Divergence)
-- [ ] Bollinger Bands with standard deviation settings
+### Technical Indicators (Pre-calculated from Backend)
+- [ ] Moving Averages (SMA, EMA) overlay lines with D3 line generators
+- [ ] RSI subplot with overbought/oversold threshold lines
+- [ ] MACD histogram and signal lines in dedicated subplot
+- [ ] Bollinger Bands with D3 area generators for band fills
 - [ ] Support/Resistance level detection
 
 ### User Experience
@@ -189,174 +213,147 @@ export class TechnicalIndicators {
 }
 ```
 
----
+### D3.js Implementation Architecture (Swizec Teller Pattern)
 
-## 📁 Component Structure
-```
-apps/web/src/
-├── components/
-│   ├── Chart/
-│   │   ├── CandlestickChart.tsx
-│   │   ├── ChartControls.tsx
-│   │   ├── TimeframeSelector.tsx
-│   │   ├── IndicatorPanel.tsx
-│   │   └── VolumeChart.tsx
-│   ├── Indicators/
-│   │   ├── MovingAverage.tsx
-│   │   ├── RSIIndicator.tsx
-│   │   └── MACDIndicator.tsx
-├── services/
-│   ├── ChartService.ts
-│   └── ChartDataService.ts
-├── utils/
-│   ├── TechnicalIndicators.ts
-│   └── ChartHelpers.ts
-├── hooks/
-│   ├── useChartData.ts
-│   ├── useChart.ts
-│   └── useIndicators.ts
-└── types/
-    └── ChartTypes.ts
-```
-
----
-
-## 🧪 Testing Strategy
-
-### Component Tests
-- [ ] Render chart with mock data
-- [ ] Test timeframe switching
-- [ ] Validate indicator calculations
-- [ ] Test responsive behavior
-
-### Integration Tests
-- [ ] Chart data loading and display
-- [ ] Real-time updates functionality
-- [ ] Cross-browser compatibility
-- [ ] Performance with large datasets
-
-### Visual Testing
-- [ ] Screenshot comparisons for chart rendering
-- [ ] Animation and interaction testing
-- [ ] Theme switching validation
-
----
-
-## 🎨 Design Specifications
-
-### Color Scheme
-```css
-:root {
-  /* Candlestick Colors */
-  --bull-candle: #4caf50;
-  --bear-candle: #f44336;
-  --wick-color: #757575;
-  
-  /* Volume Colors */
-  --volume-up: rgba(76, 175, 80, 0.7);
-  --volume-down: rgba(244, 67, 54, 0.7);
-  
-  /* Grid and Background */
-  --chart-background: #ffffff;
-  --grid-color: rgba(197, 203, 206, 0.5);
-  --crosshair-color: #758696;
-  
-  /* Dark Theme */
-  --dark-chart-background: #1e1e1e;
-  --dark-grid-color: rgba(42, 46, 57, 0.5);
-  --dark-text-color: #d1d4dc;
-}
-```
-
-### Responsive Breakpoints
-- **Mobile**: < 768px - Simplified controls, touch-optimized
-- **Tablet**: 768px - 1024px - Condensed layout
-- **Desktop**: > 1024px - Full feature set
-
----
-
-## 🚀 Implementation Phases
-
-### Phase 1: Basic Chart (Week 1)
-- [ ] Set up lightweight-charts library
-- [ ] Create basic candlestick chart component
-- [ ] Implement data loading from API
-- [ ] Add basic zoom/pan functionality
-
-### Phase 2: Enhanced Features (Week 2)
-- [ ] Add volume overlay
-- [ ] Implement timeframe selection
-- [ ] Create responsive design
-- [ ] Add loading and error states
-
-### Phase 3: Technical Indicators (Week 3)
-- [ ] Implement moving averages (SMA/EMA)
-- [ ] Add RSI indicator
-- [ ] Create MACD visualization
-- [ ] Add Bollinger Bands
-
-### Phase 4: Advanced Features (Week 4)
-- [ ] Real-time data updates
-- [ ] Custom indicator configuration
-- [ ] Chart annotation tools
-- [ ] Export functionality
-
----
-
-## 🔗 API Integration
-
-### Required Endpoints
+#### Core Component Structure
 ```typescript
-// Chart data endpoint
-GET /api/stocks/{symbol}/chart?timeframe=1M&indicators=SMA,RSI
+// useCandlestickChart.ts - Custom hook for D3 logic
+export const useCandlestickChart = (
+  data: OHLCV[],
+  dimensions: { width: number; height: number }
+) => {
+  // D3 scales, generators, and chart logic
+  // Returns ref and update functions
+}
 
-// Real-time updates
-WebSocket: /ws/chart/{symbol}
-```
-
-### Data Format
-```json
-{
-  "symbol": "AAPL",
-  "timeframe": "1M",
-  "data": [
-    {
-      "timestamp": 1699632000,
-      "open": 174.67,
-      "high": 175.42,
-      "low": 173.66,
-      "close": 174.67,
-      "volume": 21907100
-    }
-  ],
-  "indicators": {
-    "SMA_20": [172.45, 173.21, 174.12],
-    "RSI_14": [45.67, 47.23, 51.89]
-  }
+// CandlestickChart.tsx - React wrapper component
+export const CandlestickChart: React.FC<Props> = ({
+  data,
+  indicators,
+  onTimeframeChange
+}) => {
+  // React state management
+  // D3 chart rendering via custom hook
+  // Event handling bridge between D3 and React
 }
 ```
 
----
+#### Technical Implementation Details
+- [ ] **D3 Scales Setup**
+  - `d3.scaleTime()` for x-axis temporal data
+  - `d3.scaleLinear()` for y-axis price data
+  - `d3.scaleBand()` for candlestick width calculations
+  - Synchronized scales across main chart and subplots
 
-## 📈 Performance Targets
-- Initial chart render: < 500ms
-- Data update: < 100ms
-- Smooth 60fps animations
-- Memory usage: < 100MB for 1 year of data
-- Support up to 10,000 data points
+- [ ] **Data Processing Pipeline**
+  - D3 data join patterns for efficient updates
+  - Data transformation for candlestick path generation
+  - Time-based data filtering for zoom levels
+  - Real-time data streaming integration
 
----
+- [ ] **Interaction Handling**
+  - `d3-zoom` for pan and zoom functionality
+  - `d3-brush` for time range selection
+  - Custom mouse/touch event handlers
+  - Keyboard navigation support
 
-## 🛡️ Accessibility
-- [ ] Keyboard navigation support
-- [ ] Screen reader compatibility
-- [ ] High contrast mode
-- [ ] Focus indicators
-- [ ] ARIA labels and descriptions
+### Performance Optimizations
+- [ ] **D3.js Specific Optimizations**
+  - Canvas rendering for high-frequency data (>10k points)
+  - SVG for interactive elements and overlays
+  - Efficient data binding with `d3.selectAll().data()`
+  - Transition management for smooth animations
 
----
+- [ ] **React Integration Optimizations**
+  - `useCallback` for D3 event handlers
+  - `useMemo` for expensive D3 calculations
+  - `useRef` for D3 DOM manipulation access
+  - Debounced resize handling
+
+### Backend Integration
+- [ ] **Pre-calculated Data Consumption**
+  - Fetch technical indicators from Story 1.4 calculation service
+  - No client-side indicator calculations
+  - Real-time updates via WebSocket for live data
+  - Efficient data serialization for D3 consumption
+
+### Swizec Teller Best Practices Implementation
+- [ ] **"React for State, D3 for DOM" Pattern**
+  - React manages component lifecycle and user interactions
+  - D3 handles all SVG/Canvas rendering and animations
+  - Clear separation of concerns between libraries
+
+- [ ] **Custom Hooks for D3 Logic**
+  - Encapsulate D3 chart logic in reusable hooks
+  - Type-safe interfaces between React and D3
+  - Testing strategy for D3 functionality
+
+- [ ] **Animation and Transition Management**
+  - D3 transitions for smooth data updates
+  - React state for animation triggers
+  - Performance-optimized animation scheduling
+
+## 🔧 Technical Stack
+
+### Dependencies
+- [ ] `d3` - Core D3.js library (latest v7+)
+- [ ] `@types/d3` - TypeScript definitions
+- [ ] `d3-selection`, `d3-scale`, `d3-axis`, `d3-zoom`, `d3-brush`
+- [ ] React 18+ with concurrent features
+- [ ] TypeScript for type safety
+
+### File Structure
+```
+src/components/charts/
+├── CandlestickChart/
+│   ├── CandlestickChart.tsx
+│   ├── useCandlestickChart.ts
+│   ├── chartHelpers.ts
+│   ├── d3Generators.ts
+│   └── types.ts
+├── shared/
+│   ├── useChartDimensions.ts
+│   ├── chartUtils.ts
+│   └── scales.ts
+```
+
+## 🎯 Learning Resources & References
+- [ ] Study Swizec Teller's "React + D3" patterns
+- [ ] Implement examples from "React + D3.js" course materials
+- [ ] Follow D3.js Observable notebooks for advanced techniques
+- [ ] Reference financial charting libraries for UX patterns
+
+## 📋 Testing Strategy
+- [ ] **Unit Tests**
+  - D3 scale and generator functions
+  - Data transformation utilities
+  - Custom hook behavior
+
+- [ ] **Integration Tests**
+  - React-D3 interaction patterns
+  - Chart responsiveness
+  - Real-time data updates
+
+- [ ] **Visual Regression Tests**
+  - Chart rendering accuracy
+  - Animation smoothness
+  - Cross-browser compatibility
+
+## 🎯 Success Metrics
+- [ ] Chart renders 1000+ data points smoothly (60fps)
+- [ ] Interactive features respond within 16ms
+- [ ] Memory usage remains stable during real-time updates
+- [ ] Charts work seamlessly across all modern browsers
+- [ ] Developer experience: clear separation of React/D3 concerns
 
 ## 🔗 Dependencies
-- **Prerequisites**: Story 1.2 (API Endpoints) for data access
-- **Related**: Story 2.2 (Real-time Updates) for live data
-- **Integration**: Story 3.1 (Stock Search) for symbol selection
+- **Story 1.4**: Data Calculation Service (for pre-calculated indicators)
+- **Story 1.2**: Financial Data API Endpoints
+- **Story 5.1**: Real-time Price Updates (for live chart updates)
+
+## 🚀 Future Enhancements
+- [ ] WebGL rendering for extreme performance
+- [ ] Advanced D3 animations and micro-interactions
+- [ ] Custom indicator builder interface
+- [ ] Chart annotation and drawing tools
+- [ ] Multi-chart synchronized analysis views

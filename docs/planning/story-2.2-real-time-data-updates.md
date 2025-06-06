@@ -557,5 +557,5 @@ const webSocketConfig = {
 
 ## 🔗 Dependencies
 - **Prerequisites**: Story 1.2 (API Endpoints) for data access
-- **Integration**: Story 2.1 (Charts) for visual updates
+- **Integration**: Stories 2.1.1-2.1.3 (Chart Architecture) for visual updates
 - **Related**: Story 4.1 (Alerts) for price notifications

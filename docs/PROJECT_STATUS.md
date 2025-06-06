@@ -78,12 +78,14 @@
 
 ## 🎯 Next Phase: Epic 2 - Frontend Chart Components & Visualization
 
-### 📊 Story 2.1: Candlestick Chart Component (Upcoming)
+### 📊 Story 2.1: Interactive Chart Architecture (Upcoming - Split into Sub-Stories)
 **Planned Start**: June 6, 2025  
-**Estimated Duration**: 5 days  
+**Estimated Duration**: 10 days (across 3 stories)  
 
-**Scope:**
-- Interactive candlestick charts with OHLC visualization
+**Scope:** *(Refined into 3 focused sub-stories)*
+- **Story 2.1.1**: Context API Data Management (state management setup)
+- **Story 2.1.2**: Backend Request Infrastructure (API client and data fetching)
+- **Story 2.1.3**: D3.js Candlestick Chart Component (interactive charts with OHLC visualization)
 - Multiple timeframe support (1D, 1W, 1M, 3M, 6M, 1Y, All)
 - Volume bars and real-time updates
 - Mobile-responsive design
@@ -169,7 +171,7 @@
 ## 📋 Upcoming Milestones
 
 ### Short Term (1-2 weeks)
-1. **Story 2.1**: Candlestick Chart Component
+1. **Stories 2.1.1-2.1.3**: Interactive Chart Architecture (Context API, Backend Infrastructure, D3.js Charts)
 2. **Story 2.2**: Real-time Data Updates
 3. **Story 2.3**: Chart Controls & Interface
 

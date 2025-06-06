@@ -262,7 +262,9 @@ test('user can compare multiple stocks', async ({ page }) => {
 ### Story Dependencies
 - **Depends on:**
   - Story 1.2: Financial Data API Endpoints (for bulk data access)
-  - Story 2.1: Candlestick Chart Component (for chart foundation)
+  - Story 2.1.1: Context API Data Management (for multi-stock state management)
+  - Story 2.1.2: Backend Request Infrastructure (for bulk data requests)
+  - Story 2.1.3: D3.js Candlestick Chart Component (for chart foundation)
   - Story 3.1: Stock Search & Symbol Management (for stock selection)
 
 ### Technical Dependencies

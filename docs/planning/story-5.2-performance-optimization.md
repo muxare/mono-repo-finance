@@ -15,7 +15,9 @@ High
 10
 
 ## Dependencies
-- Story 2.1: Candlestick Chart Component (for chart optimization)
+- Story 2.1.1: Context API Data Management (for state optimization)
+- Story 2.1.2: Backend Request Infrastructure (for API performance)
+- Story 2.1.3: D3.js Candlestick Chart Component (for chart optimization)
 - Story 3.1: Stock Search & Symbol Management (for list optimization)
 - Story 5.1: Real-time Price Updates (for real-time performance)
 

@@ -637,5 +637,5 @@ apps/web/src/
 
 ## 🔗 Dependencies
 - **Prerequisites**: Story 1.1 (Database) for stock data
-- **Integration**: Story 2.1 (Charts) for symbol selection
+- **Integration**: Stories 2.1.1-2.1.3 (Chart Architecture) for symbol selection
 - **Enhancement**: Story 4.2 (Portfolio) for investment tracking

@@ -176,12 +176,15 @@ public class StockService : IStockService
                 .OrderByDescending(p => p.Date)
                 .FirstOrDefaultAsync();
 
-            if (latestPrice != null)
-            {
+            if (latestPrice != null)            {
                 stockDto.LatestPrice = latestPrice.Close;
                 stockDto.LastPriceUpdate = latestPrice.Date;
 
-                // Calculate price change
+                // TODO: Move price change calculations to Story 1.4 Data Calculation Service
+                // This calculation logic will be moved to the backend calculation service
+                // for better performance and consistency across the application
+                
+                // Temporary calculation until Story 1.4 is implemented
                 var previousPrice = await _context.StockPrices
                     .Where(p => p.StockId == stock.Id && p.Date < latestPrice.Date)
                     .OrderByDescending(p => p.Date)
