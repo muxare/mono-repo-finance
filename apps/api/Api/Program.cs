@@ -62,6 +62,15 @@ builder.Services.AddScoped<IStockPriceService, StockPriceService>();
 builder.Services.AddScoped<ISectorService, SectorService>();
 builder.Services.AddScoped<IExchangeService, ExchangeService>();
 
+// Add calculation services
+builder.Services.AddScoped<IPriceCalculationService, PriceCalculationService>();
+builder.Services.AddScoped<ITechnicalIndicatorService, TechnicalIndicatorService>();
+builder.Services.AddScoped<IStatisticalAnalysisService, StatisticalAnalysisService>();
+builder.Services.AddScoped<ICalculationJobService, CalculationJobService>();
+
+// Add memory caching for calculations
+builder.Services.AddMemoryCache();
+
 // Add data import services
 builder.Services.AddScoped<IDataValidationService, DataValidationService>();
 builder.Services.AddScoped<IDataImportService, CsvDataImportService>();

@@ -1,0 +1,345 @@
+/* Candlestick Chart Component Styles */
+
+.candlestick-chart {
+  display: flex;
+  flex-direction: column;
+  background: var(--chart-background, #ffffff);
+  border: 1px solid var(--chart-border, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Theme Variations */
+.candlestick-chart.light {
+  --chart-background: #ffffff;
+  --chart-border: #e0e0e0;
+  --chart-text: #333333;
+  --chart-text-secondary: #666666;
+  --chart-grid: #f5f5f5;
+  --chart-hover: #f9f9f9;
+  --chart-control-bg: #f5f5f5;
+  --chart-control-hover: #e0e0e0;
+}
+
+.candlestick-chart.dark {
+  --chart-background: #1a1a1a;
+  --chart-border: #333333;
+  --chart-text: #ffffff;
+  --chart-text-secondary: #cccccc;
+  --chart-grid: #2a2a2a;
+  --chart-hover: #2a2a2a;
+  --chart-control-bg: #333333;
+  --chart-control-hover: #444444;
+}
+
+/* Chart Header */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--chart-background);
+  border-bottom: 1px solid var(--chart-border);
+}
+
+.chart-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--chart-text);
+}
+
+.price-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.current-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--chart-text);
+}
+
+.price-change {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.price-change.positive {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.price-change.negative {
+  color: #F44336;
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.chart-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.chart-btn {
+  padding: 8px 12px;
+  background: var(--chart-control-bg);
+  border: 1px solid var(--chart-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--chart-text);
+  transition: all 0.2s ease;
+}
+
+.chart-btn:hover {
+  background: var(--chart-control-hover);
+  transform: translateY(-1px);
+}
+
+/* Chart Container */
+.chart-container {
+  flex: 1;
+  position: relative;
+  background: var(--chart-background);
+}
+
+.d3-candlestick-chart {
+  display: block;
+  background: var(--chart-background);
+}
+
+/* Chart Footer */
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--chart-background);
+  border-top: 1px solid var(--chart-border);
+}
+
+.chart-info {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--chart-text-secondary);
+}
+
+.indicator-legend {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.indicator-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--chart-text-secondary);
+}
+
+.indicator-item.hidden {
+  opacity: 0.5;
+}
+
+.indicator-color {
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* State Classes */
+.candlestick-chart.loading,
+.candlestick-chart.error,
+.candlestick-chart.no-data {
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--chart-text-secondary);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--chart-border);
+  border-top: 3px solid #2196F3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message,
+.no-data-message {
+  text-align: center;
+  color: var(--chart-text);
+  padding: 20px;
+}
+
+.error-message h4,
+.no-data-message h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.error-message p,
+.no-data-message p {
+  margin: 0 0 16px 0;
+  color: var(--chart-text-secondary);
+}
+
+.retry-btn {
+  padding: 10px 20px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #1976D2;
+}
+
+/* D3 Chart Specific Styles */
+.d3-candlestick-chart .axis {
+  font-size: 12px;
+  color: var(--chart-text-secondary);
+}
+
+.d3-candlestick-chart .axis path,
+.d3-candlestick-chart .axis line {
+  stroke: var(--chart-border);
+  shape-rendering: crispEdges;
+}
+
+.d3-candlestick-chart .grid-line-x,
+.d3-candlestick-chart .grid-line-y {
+  stroke: var(--chart-grid);
+  stroke-dasharray: 2,2;
+}
+
+.d3-candlestick-chart .hover-line {
+  stroke: var(--chart-text);
+  stroke-width: 1;
+  stroke-dasharray: 3,3;
+  pointer-events: none;
+}
+
+.d3-candlestick-chart .focus {
+  pointer-events: none;
+}
+
+.d3-candlestick-chart .overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+/* Candlestick Elements */
+.candlestick .wick {
+  stroke-width: 1;
+}
+
+.candlestick .candle-body {
+  stroke-width: 1;
+}
+
+.volume-bar {
+  opacity: 0.6;
+}
+
+/* Technical Indicators */
+.indicator {
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.8;
+}
+
+.indicator.indicator-sma {
+  stroke: #2196F3;
+}
+
+.indicator.indicator-ema {
+  stroke: #FF9800;
+}
+
+.indicator.indicator-rsi {
+  stroke: #9C27B0;
+}
+
+.indicator.indicator-macd {
+  stroke: #4CAF50;
+}
+
+.indicator.indicator-bollinger {
+  stroke: #E91E63;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .chart-title h3 {
+    font-size: 16px;
+  }
+
+  .current-price {
+    font-size: 18px;
+  }
+
+  .chart-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .chart-controls {
+    align-self: flex-end;
+  }
+
+  .indicator-legend {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-header,
+  .chart-footer {
+    padding: 12px 16px;
+  }
+
+  .price-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .chart-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
