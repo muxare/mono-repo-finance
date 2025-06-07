@@ -14,3 +14,6 @@ export { FinancialDataErrorBoundary } from './FinancialDataErrorBoundary';
 export { CreateTodoForm } from './CreateTodoForm';
 export { TodoItem } from './TodoItem';
 export { TodoList } from './TodoList';
+
+// Development Tools
+export { ApiTrafficMonitor } from './ApiTrafficMonitor';

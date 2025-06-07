@@ -75,11 +75,11 @@ public class DataImportController : ControllerBase
             if (!allowedExtensions.Contains(fileExtension))
             {
                 return BadRequest($"File type not supported. Allowed types: {string.Join(", ", allowedExtensions)}");
-            }
-
-            // Process import
+            }            // Process import
             using var stream = request.File.OpenReadStream();
-            var result = await _importService.ImportCsvAsync(stream, request.File.FileName, request.Options);            return Ok(result);
+            var result = await _importService.ImportCsvAsync(stream, request.File.FileName, request.Options);
+            
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -352,10 +352,10 @@ public class DataImportController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("JSON validation requested for file: {FileName}", request.File.FileName);
+            _logger.LogInformation("JSON validation requested for file: {FileName}", request.File.FileName);            // Set validation-only option
+            request.Options.ValidateOnly = true;
 
-            // Set validation-only option
-            request.Options.ValidateOnly = true;            using var stream = request.File.OpenReadStream();
+            using var stream = request.File.OpenReadStream();
             var result = await _jsonImportService.ImportJsonAsync(stream, request.File.FileName, request.Options);
 
             return Ok(result);
@@ -706,11 +706,12 @@ public class DataImportController : ControllerBase
                 return "json";
             }
 
-            // Check if it looks like CSV (contains commas)
-            if (firstLine.Contains(','))
+            // Check if it looks like CSV (contains commas)            if (firstLine.Contains(','))
             {
                 return "csv";
-            }            return "unknown";
+            }
+            
+            return "unknown";
         }
         catch
         {

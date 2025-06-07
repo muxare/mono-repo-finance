@@ -97,3 +97,82 @@ public class CsvPriceRecord
     public long Volume { get; set; }
     public int? OpenInt { get; set; }
 }
+
+/// <summary>
+/// Options for auto-import process
+/// </summary>
+public class AutoImportOptions
+{
+    /// <summary>
+    /// Maximum number of files to import in one batch (default: 10)
+    /// </summary>
+    public int BatchSize { get; set; } = 10;
+
+    /// <summary>
+    /// Whether to validate data during import (default: true)
+    /// </summary>
+    public bool ValidateData { get; set; } = true;
+
+    /// <summary>
+    /// Whether to create backup before import (default: false for bulk imports)
+    /// </summary>
+    public bool CreateBackup { get; set; } = false;
+}
+
+/// <summary>
+/// Result of auto-import operation
+/// </summary>
+public class AutoImportResult
+{
+    public DateTime StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
+    public AutoImportStatus Status { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public int BatchSize { get; set; }
+    public int TotalFilesDiscovered { get; set; }
+    public int FilesToProcess { get; set; }
+    public int SuccessCount { get; set; }
+    public int FailedCount { get; set; }
+    public int SkippedCount { get; set; }
+    public int TotalRecordsImported { get; set; }
+    public List<AutoImportFileResult> FileResults { get; set; } = new();
+    
+    public TimeSpan? Duration => EndTime.HasValue ? EndTime - StartTime : null;
+}
+
+/// <summary>
+/// Result for individual file import
+/// </summary>
+public class AutoImportFileResult
+{
+    public string FileName { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
+    public AutoImportFileStatus Status { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public int RecordsImported { get; set; }
+    
+    public TimeSpan? Duration => EndTime.HasValue ? EndTime - StartTime : null;
+}
+
+/// <summary>
+/// Status of auto-import operation
+/// </summary>
+public enum AutoImportStatus
+{
+    InProgress,
+    Completed,
+    CompletedWithErrors,
+    Failed
+}
+
+/// <summary>
+/// Status of individual file import
+/// </summary>
+public enum AutoImportFileStatus
+{
+    InProgress,
+    Success,
+    Failed,
+    Skipped
+}

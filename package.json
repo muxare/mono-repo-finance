@@ -7,10 +7,11 @@
     "apps/*",
     "libs/*",
     "tools/*"
-  ],  "scripts": {
+  ],
+  "scripts": {
     "build": "nx run-many --target=build --projects=api,web",
     "test": "nx run-many --target=test --projects=api,web",
-    "dev": "nx run-many --target=serve --projects=api,web --parallel",
+    "dev": "concurrently \"pnpm nx run api:serve\" \"pnpm nx run web:serve\"",
     "dev:api": "nx serve api",
     "dev:web": "nx serve web",
     "dev:clean": "pwsh -Command \"Get-Process -Name 'dotnet','node' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host 'Cleaned up development processes'\"",
@@ -21,10 +22,11 @@
   },
   "devDependencies": {
     "@nx/js": "^17.2.8",
-    "@nx/workspace": "^17.2.8",
-    "@nx/web": "^17.2.8",
-    "@nx/vite": "^17.2.8",
     "@nx/react": "^17.2.8",
+    "@nx/vite": "^17.2.8",
+    "@nx/web": "^17.2.8",
+    "@nx/workspace": "^17.2.8",
+    "concurrently": "^9.1.2",
     "nx": "^17.2.8",
     "prettier": "^3.1.1",
     "rimraf": "^5.0.5",
