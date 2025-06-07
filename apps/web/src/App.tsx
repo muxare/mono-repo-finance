@@ -5,7 +5,9 @@ import { TodoList } from './components/TodoList';
 import { FinancialDataDemo } from './components/FinancialDataDemo';
 import { ContextApiTest } from './components/ContextApiTest';
 import CandlestickChartDemo from './components/CandlestickChartDemo';
+import { EmaFanDemo } from './components/EmaFanDemo';
 import { ApiTrafficMonitor } from './components/ApiTrafficMonitor';
+import { ComponentErrorBoundary } from './components/ComponentErrorBoundary';
 import { setupApiInterceptor } from './utils/apiInterceptor';
 import { useState, useEffect } from 'react';
 import './App.css';
@@ -38,12 +40,10 @@ function App() {
             <header className="app-header">
               <h1>MonoRepo Financial App</h1>
               <p>A modern financial application built with .NET Core and React TypeScript</p>
-            </header>
-              <main className="app-main">
-              <CandlestickChartDemo />
-              <ContextApiTest />
-              <FinancialDataDemo />
-              <TodoList />
+            </header>              <main className="app-main">
+              <ComponentErrorBoundary name="EmaFanDemo">
+                <EmaFanDemo />
+              </ComponentErrorBoundary>
             </main>
             
             <footer className="app-footer">

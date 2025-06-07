@@ -5,6 +5,13 @@
 // Chart Components
 export * from './Chart';
 
+// UI Components
+export { EmaFanList } from './UI/EmaFanList';
+export { SimpleEmaFanList } from './SimpleEmaFanList';
+
+// Demo Components
+export { EmaFanDemo } from './EmaFanDemo';
+
 // Context API and Demo Components
 export { ContextApiTest } from './ContextApiTest';
 export { FinancialDataDemo } from './FinancialDataDemo';
