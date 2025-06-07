@@ -15,7 +15,10 @@
     "dev:api": "nx serve api",
     "dev:web": "nx serve web",
     "dev:clean": "pwsh -Command \"Get-Process -Name 'dotnet','node' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host 'Cleaned up development processes'\"",
-    "dev:start": "pnpm run dev:clean && pnpm run dev",
+    "dev:start": "pwsh .\\scripts\\dev-manager.ps1 start",
+    "dev:stop": "pwsh .\\scripts\\dev-manager.ps1 stop -Force",
+    "dev:restart": "pwsh .\\scripts\\dev-manager.ps1 restart -Force",
+    "dev:status": "pwsh .\\scripts\\dev-manager.ps1 status",
     "lint": "nx run-many --target=lint --projects=web",
     "format": "prettier --write .",
     "clean": "nx reset && rimraf node_modules apps/*/node_modules libs/*/node_modules"

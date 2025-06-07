@@ -2,7 +2,7 @@
 
 **Last Updated**: June 7, 2025  
 **Current Phase**: Epic 2 - Frontend Chart Components & Visualization  
-**Overall Progress**: 6 of 7 stories completed (86%)
+**Overall Progress**: 6 of 8 stories completed (75%)
 
 ---
 
@@ -205,12 +205,40 @@
 
 ---
 
+### 🔄 Story 2.4: Data Flow Visualization & User Interface Refinement - **IN PLANNING**
+**Priority**: High  
+**Story Points**: 8  
+**Dependencies**: Stories 2.1.1, 2.1.2, 2.1.3
+
+**Planning Summary:**
+- Enhanced data flow visualization between backend and frontend
+- Company selection dropdown with search functionality
+- Advanced chart zoom and pan interactions
+- Loading states and connection status indicators
+- Mobile-optimized touch gestures and responsive design
+
+**Key Features:**
+- Visual confirmation of backend-frontend data flow
+- Searchable company selector with recent selections
+- Mouse wheel zoom and click-drag pan functionality
+- Zoom reset and fit-to-data controls
+- Connection health and data freshness indicators
+
+**User Experience Goals:**
+- Clear visibility of data loading and update processes
+- Intuitive company selection (< 3 clicks to any stock)
+- Smooth chart navigation with < 100ms response time
+- Mobile touch gesture support for zoom and pan
+- Professional loading states and error recovery
+
+---
+
 ## 📈 Development Metrics
 
 ### Completed Work
-- **Total Stories Completed**: 6 of 7 (86%)
+- **Total Stories Completed**: 6 of 8 (75%)
 - **Epic 1 Progress**: 3 of 3 stories (100%)
-- **Epic 2 Progress**: 3 of 3 stories (100%)
+- **Epic 2 Progress**: 3 of 4 stories (75%)
 - **Code Quality**: Clean builds, no TypeScript errors
 - **Test Coverage**: Manual testing, endpoint verification
 - **Documentation**: Comprehensive, up-to-date
@@ -285,9 +313,9 @@
 ## 📋 Upcoming Milestones
 
 ### Short Term (1-2 weeks)
-1. **Stories 2.1.1-2.1.3**: Interactive Chart Architecture (Context API, Backend Infrastructure, D3.js Charts)
+1. **Story 2.4**: Data Flow Visualization & User Interface Refinement
 2. **Story 2.2**: Real-time Data Updates
-3. **Story 2.3**: Chart Controls & Interface
+3. **Story 2.3**: Enhanced Chart Controls & Interface
 
 ### Medium Term (3-4 weeks)
 1. **Epic 3**: Stock Search & Management Features

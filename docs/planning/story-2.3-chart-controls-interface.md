@@ -1,4 +1,16 @@
-# Story 2.3: Chart Controls & Interface
+# Story 2.3: Chart Controls & I### User Experience
+- [ ] **Keyboard Shortcuts**: Arrow keys for navigation, +/- for zoom, spacebar for full-screen
+- [ ] **Responsive Design**: Controls adapt to mobile and tablet layouts
+- [ ] **Tooltips & Help**: Contextual help for all controls and features
+- [ ] **Settings Persistence**: Remember user preferences across sessions
+- [ ] **Quick Reset**: One-click reset to default view and settings
+
+### Navigation & Interaction Experience
+- [ ] **Smooth Animations**: All zoom and pan operations with smooth transitions
+- [ ] **Zoom Boundaries**: Prevent over-zooming and maintain readable chart scale
+- [ ] **Pan Boundaries**: Prevent panning beyond available data range
+- [ ] **Visual Feedback**: Loading states and interaction confirmations
+- [ ] **Multi-Touch Support**: Two-finger gestures for mobile/tablet usersce
 
 ## Overview
 **Epic**: Frontend Chart Components & Visualization  
@@ -21,6 +33,14 @@
 - [ ] **Chart Settings**: Customize colors, grid lines, and display preferences
 - [ ] **Export Functionality**: Save chart as PNG/SVG with current settings
 
+### Enhanced Navigation Controls
+- [ ] **Zoom Controls**: Dedicated zoom in/out buttons with visual feedback
+- [ ] **Pan Controls**: Left/right arrow buttons for data navigation
+- [ ] **Zoom Reset**: "Fit to Data" button to reset view to show all data
+- [ ] **Mouse Wheel Zoom**: Smooth zoom in/out with mouse wheel
+- [ ] **Click & Drag Pan**: Click and drag to pan through historical data
+- [ ] **Touch Gestures**: Pinch-to-zoom and swipe gestures for mobile devices
+
 ### User Experience
 - [ ] **Keyboard Shortcuts**: Arrow keys for navigation, +/- for zoom, spacebar for full-screen
 - [ ] **Responsive Design**: Controls adapt to mobile and tablet layouts
@@ -42,6 +62,7 @@ components/Chart/
 ├── ChartControls.tsx          # Main controls container
 ├── TimeframeSelector.tsx      # Time period buttons
 ├── ChartTypeSelector.tsx      # Chart style toggle
+├── NavigationControls.tsx     # Zoom and pan controls
 ├── IndicatorPanel.tsx         # Technical indicators
 ├── ChartSettings.tsx          # Settings modal
 ├── ExportDialog.tsx           # Chart export options
@@ -103,6 +124,95 @@ const availableIndicators = [
   { id: 'rsi', name: 'RSI', category: 'oscillator' },
   { id: 'macd', name: 'MACD', category: 'oscillator' },
 ];
+```
+
+#### 3.5. Navigation Controls Component
+```typescript
+interface NavigationControlsProps {
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onPanLeft: () => void;
+  onPanRight: () => void;
+  onResetZoom: () => void;
+  onFitToData: () => void;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
+  canPanLeft: boolean;
+  canPanRight: boolean;
+}
+
+export const NavigationControls: React.FC<NavigationControlsProps> = ({
+  onZoomIn,
+  onZoomOut,
+  onPanLeft,
+  onPanRight,
+  onResetZoom,
+  onFitToData,
+  canZoomIn,
+  canZoomOut,
+  canPanLeft,
+  canPanRight,
+}) => {
+  return (
+    <div className="navigation-controls">
+      <div className="zoom-controls">
+        <button
+          onClick={onZoomIn}
+          disabled={!canZoomIn}
+          title="Zoom In (+)"
+          className="control-button zoom-in"
+        >
+          <ZoomInIcon />
+        </button>
+        <button
+          onClick={onZoomOut}
+          disabled={!canZoomOut}
+          title="Zoom Out (-)"
+          className="control-button zoom-out"
+        >
+          <ZoomOutIcon />
+        </button>
+        <button
+          onClick={onResetZoom}
+          title="Reset Zoom (R)"
+          className="control-button reset-zoom"
+        >
+          <ResetIcon />
+        </button>
+      </div>
+      
+      <div className="pan-controls">
+        <button
+          onClick={onPanLeft}
+          disabled={!canPanLeft}
+          title="Pan Left (←)"
+          className="control-button pan-left"
+        >
+          <ArrowLeftIcon />
+        </button>
+        <button
+          onClick={onPanRight}
+          disabled={!canPanRight}
+          title="Pan Right (→)"
+          className="control-button pan-right"
+        >
+          <ArrowRightIcon />
+        </button>
+      </div>
+      
+      <div className="fit-controls">
+        <button
+          onClick={onFitToData}
+          title="Fit to Data"
+          className="control-button fit-data"
+        >
+          <FitToDataIcon />
+          Fit All
+        </button>
+      </div>
+    </div>
+  );
+};
 ```
 
 #### 4. Chart Settings
