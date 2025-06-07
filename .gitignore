@@ -450,3 +450,14 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+# SQLite database files (should not be committed to version control)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+**/Data Source=*.db*
+
+# Database connection files with actual database names
+Data Source=*
