@@ -34,7 +34,7 @@ function Install-Dependencies {
 
 function Start-Development {
     Write-Host "Starting all applications in development mode..." -ForegroundColor Green
-    Write-Host "API will be available at: https://localhost:7000" -ForegroundColor Yellow
+    Write-Host "API will be available at: http://localhost:5042" -ForegroundColor Yellow
     Write-Host "Web app will be available at: http://localhost:5173" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Press Ctrl+C to stop all services" -ForegroundColor Red
@@ -67,7 +67,7 @@ function Clean-All {
 
 function Start-API {
     Write-Host "Starting .NET API..." -ForegroundColor Green
-    Write-Host "API will be available at: https://localhost:7000" -ForegroundColor Yellow
+    Write-Host "API will be available at: http://localhost:5042" -ForegroundColor Yellow
     pnpm nx serve api
 }
 

@@ -28,7 +28,7 @@ install_dependencies() {
 
 start_development() {
     echo "Starting all applications in development mode..."
-    echo "API will be available at: https://localhost:7000"
+    echo "API will be available at: http://localhost:5042"
     echo "Web app will be available at: http://localhost:5173"
     echo ""
     echo "Press Ctrl+C to stop all services"
@@ -57,7 +57,7 @@ clean_all() {
 
 start_api() {
     echo "Starting .NET API..."
-    echo "API will be available at: https://localhost:7000"
+    echo "API will be available at: http://localhost:5042"
     pnpm nx serve api
 }
 
