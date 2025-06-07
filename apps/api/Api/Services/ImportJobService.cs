@@ -12,6 +12,9 @@ public interface IImportJobService
 {
     string ScheduleCsvImport(Stream csvStream, string fileName, ImportOptions options);
     string ScheduleCsvFileImport(string filePath, ImportOptions options);
+    
+    // Batch import methods
+    string ScheduleBatchImport(IFormFileCollection files, ImportOptions options, bool processInParallel = true, int maxConcurrency = 5);
 }
 
 public class ImportJobService : IImportJobService
@@ -55,6 +58,28 @@ public class ImportJobService : IImportJobService
         var jobId = BackgroundJob.Enqueue(() => ProcessCsvFileImportJob(filePath, options));
         
         _logger.LogInformation("Scheduled CSV file import job {JobId} for file {FilePath}", jobId, filePath);
+        
+        return jobId;
+    }
+
+    /// <summary>
+    /// Schedule batch import as background job
+    /// </summary>
+    public string ScheduleBatchImport(IFormFileCollection files, ImportOptions options, bool processInParallel = true, int maxConcurrency = 5)
+    {
+        // Convert files to serializable format
+        var fileDataList = new List<(byte[] Data, string FileName, long Size)>();
+        
+        foreach (var file in files)
+        {
+            var memoryStream = new MemoryStream();
+            file.CopyTo(memoryStream);
+            fileDataList.Add((memoryStream.ToArray(), file.FileName, file.Length));
+        }
+
+        var jobId = BackgroundJob.Enqueue(() => ProcessBatchImportJob(fileDataList, options, processInParallel, maxConcurrency));
+        
+        _logger.LogInformation("Scheduled batch import job {JobId} for {FileCount} files", jobId, files.Count);
         
         return jobId;
     }
@@ -108,6 +133,48 @@ public class ImportJobService : IImportJobService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Background CSV file import job failed for file {FilePath}", filePath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Background job method for processing batch import
+    /// </summary>
+    [Queue("imports")]
+    public async Task ProcessBatchImportJob(List<(byte[] Data, string FileName, long Size)> fileDataList, ImportOptions options, bool processInParallel, int maxConcurrency)
+    {
+        _logger.LogInformation("Starting background batch import job for {FileCount} files", fileDataList.Count);
+
+        try
+        {
+            // Convert file data back to IFormFileCollection-like structure
+            var formFiles = new List<IFormFile>();
+            foreach (var (data, fileName, size) in fileDataList)
+            {
+                var stream = new MemoryStream(data);
+                var formFile = new FormFile(stream, 0, size, "file", fileName)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "application/octet-stream"
+                };
+                formFiles.Add(formFile);
+            }
+
+            var formFileCollection = new FormFileCollection();
+            formFiles.ForEach(f => formFileCollection.Add(f));
+
+            var result = await _importService.ImportBatchAsync(formFileCollection, options, processInParallel, maxConcurrency);
+
+            // Send completion notification via SignalR
+            await _hubContext.Clients.Group($"batch_import_{result.BatchId}")
+                .SendAsync("BatchImportCompleted", result);
+
+            _logger.LogInformation("Background batch import job completed. Status: {Status}, Files: {SuccessfulFiles}/{TotalFiles}", 
+                result.OverallStatus, result.SuccessfulFiles, result.TotalFiles);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Background batch import job failed for {FileCount} files", fileDataList.Count);
             throw;
         }
     }

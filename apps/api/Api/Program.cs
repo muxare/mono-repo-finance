@@ -77,6 +77,7 @@ builder.Services.AddScoped<IDataImportService, CsvDataImportService>();
 builder.Services.AddScoped<IJsonDataImportService, JsonDataImportService>();
 builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IImportJobService, ImportJobService>();
+builder.Services.AddScoped<IAutoImportService, AutoImportService>();
 
 // Add SignalR
 builder.Services.AddSignalR();

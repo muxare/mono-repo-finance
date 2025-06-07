@@ -200,6 +200,7 @@ Date,Open,High,Low,Close,Volume,OpenInt
 - **Prerequisites**: Story 1.1 (Database Design) must be complete
 - **Related**: Story 1.2 (API Endpoints) for import status API
 - **Follows**: Stories 2.1.1-2.1.3 (Chart Architecture) will consume imported data
+- **Extension**: Story 1.5 (Multi-File Import Support) adds batch import capability
 
 ---
 

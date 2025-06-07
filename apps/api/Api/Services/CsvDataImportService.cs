@@ -13,7 +13,8 @@ namespace Api.Services;
 /// CSV-specific data import service implementation
 /// </summary>
 public class CsvDataImportService : IDataImportService
-{    private readonly FinanceDbContext _context;
+{    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly FinanceDbContext _context;
     private readonly IDataValidationService _validationService;
     private readonly IBackupService _backupService;
     private readonly ILogger<CsvDataImportService> _logger;
@@ -21,11 +22,13 @@ public class CsvDataImportService : IDataImportService
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _cancellationTokens = new();
 
     public CsvDataImportService(
+        IServiceScopeFactory serviceScopeFactory,
         FinanceDbContext context,
         IDataValidationService validationService,
         IBackupService backupService,
         ILogger<CsvDataImportService> logger)
     {
+        _serviceScopeFactory = serviceScopeFactory;
         _context = context;
         _validationService = validationService;
         _backupService = backupService;
@@ -106,10 +109,9 @@ public class CsvDataImportService : IDataImportService
                 progress.Status = ImportStatus.Failed;
                 _logger.LogWarning("Import validation failed for {ImportId}: {ErrorCount} errors", importId, validationResult.Errors.Count);
                 return result;
-            }
-
-            if (options.ValidateOnly)
+            }            if (options.ValidateOnly)
             {
+                _logger.LogInformation("Validation-only mode: returning without importing to database");
                 result.Status = validationResult.IsValid ? ImportStatus.Completed : ImportStatus.Failed;
                 result.Message = validationResult.IsValid ? "Validation successful" : "Validation failed";
                 result.ProcessedRecords = records.Count;
@@ -118,6 +120,7 @@ public class CsvDataImportService : IDataImportService
                 return result;
             }
 
+            _logger.LogInformation("Starting database import for {RecordCount} records", records.Count);
             progress.CurrentOperation = "Importing to database";
 
             // Import to database
@@ -359,15 +362,16 @@ public class CsvDataImportService : IDataImportService
             _context.StockPrices.AddRange(stockPrices);
             await _context.SaveChangesAsync(cancellationToken);
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Get or create stock entity
     /// </summary>
     private async Task<Stock?> GetOrCreateStock(string? symbol, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("GetOrCreateStock called with symbol: {Symbol}", symbol);
+        
         if (string.IsNullOrEmpty(symbol))
         {
+            _logger.LogWarning("Symbol is null or empty, defaulting to AAPL");
             // For now, default to AAPL if no symbol provided
             symbol = "AAPL";
         }
@@ -377,12 +381,17 @@ public class CsvDataImportService : IDataImportService
 
         if (stock == null)
         {
+            _logger.LogInformation("Stock {Symbol} not found, creating new stock", symbol);
+            
             // Create a basic stock entry
             var defaultExchange = await _context.Exchanges
                 .FirstOrDefaultAsync(e => e.Code == "NASDAQ", cancellationToken);
             
             var defaultSector = await _context.Sectors
                 .FirstOrDefaultAsync(s => s.Name == "Technology", cancellationToken);
+
+            _logger.LogInformation("Found default exchange: {Exchange}, sector: {Sector}", 
+                defaultExchange?.Code, defaultSector?.Name);
 
             if (defaultExchange != null && defaultSector != null)
             {
@@ -396,8 +405,28 @@ public class CsvDataImportService : IDataImportService
                 };
 
                 _context.Stocks.Add(stock);
-                await _context.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Adding stock {Symbol} to context", symbol);
+                
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                    _logger.LogInformation("Successfully saved stock {Symbol} with ID {StockId}", symbol, stock.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error saving stock {Symbol}", symbol);
+                    throw;
+                }
             }
+            else
+            {
+                _logger.LogError("Could not find default exchange or sector. Exchange: {Exchange}, Sector: {Sector}", 
+                    defaultExchange?.Code, defaultSector?.Name);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("Found existing stock {Symbol} with ID {StockId}", symbol, stock.Id);
         }
 
         return stock;
@@ -414,6 +443,286 @@ public class CsvDataImportService : IDataImportService
     public Task<ImportResult> ImportJsonFileAsync(string filePath, ImportOptions options)
     {
         throw new NotSupportedException("JSON import is not supported by CSV service. Use JsonDataImportService instead.");
+    }
+
+    /// <summary>
+    /// Import multiple files as a batch
+    /// </summary>
+    public async Task<BatchImportResult> ImportBatchAsync(IFormFileCollection files, ImportOptions options, bool processInParallel = true, int maxConcurrency = 5)
+    {
+        var batchId = Guid.NewGuid();
+        var batchResult = new BatchImportResult
+        {
+            BatchId = batchId,
+            OverallStatus = ImportStatus.InProgress,
+            StartTime = DateTime.UtcNow,
+            TotalFiles = files.Count
+        };
+
+        var batchProgress = new BatchImportProgress
+        {
+            BatchId = batchId,
+            Status = ImportStatus.InProgress,
+            StartTime = DateTime.UtcNow,
+            TotalFiles = files.Count,
+            CurrentOperation = "Starting batch import"
+        };
+
+        // Store batch progress (in a real implementation, this would be persisted)
+        var batchProgressDict = new ConcurrentDictionary<Guid, BatchImportProgress>();
+        batchProgressDict[batchId] = batchProgress;
+
+        try
+        {
+            _logger.LogInformation("Starting batch import for {FileCount} files, BatchId: {BatchId}", files.Count, batchId);
+
+            var fileResults = new ConcurrentBag<FileImportResult>();
+            var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+
+            var tasks = files.Select(async (file, index) =>
+            {
+                if (!processInParallel)
+                {
+                    await semaphore.WaitAsync();
+                }
+
+                try
+                {
+                    var fileResult = await ProcessSingleFileInBatch(file, index, options, batchProgress);
+                    fileResults.Add(fileResult);
+
+                    // Update batch progress
+                    lock (batchProgress)
+                    {
+                        batchProgress.CompletedFiles++;
+                        if (fileResult.ImportResult.Status == ImportStatus.Completed)
+                            batchProgress.SuccessfulFiles++;
+                        else if (fileResult.ImportResult.Status == ImportStatus.Failed)
+                            batchProgress.FailedFiles++;
+                    }
+
+                    _logger.LogInformation("Completed file {FileIndex}/{TotalFiles}: {FileName} - Status: {Status}", 
+                        index + 1, files.Count, file.FileName, fileResult.ImportResult.Status);
+                }
+                finally
+                {
+                    if (!processInParallel)
+                    {
+                        semaphore.Release();
+                    }
+                }
+            });
+
+            if (processInParallel)
+            {
+                await Task.WhenAll(tasks);
+            }
+            else
+            {
+                foreach (var task in tasks)
+                {
+                    await task;
+                }
+            }
+
+            // Compile final results
+            batchResult.FileResults = fileResults.OrderBy(fr => fr.FileIndex).ToList();
+            batchResult.CompletedFiles = batchResult.FileResults.Count;
+            batchResult.SuccessfulFiles = batchResult.FileResults.Count(fr => fr.ImportResult.Status == ImportStatus.Completed);
+            batchResult.FailedFiles = batchResult.FileResults.Count(fr => fr.ImportResult.Status == ImportStatus.Failed);
+            batchResult.EndTime = DateTime.UtcNow;
+
+            // Calculate summary
+            batchResult.Summary.TotalRecordsProcessed = batchResult.FileResults.Sum(fr => fr.ImportResult.ProcessedRecords);
+            batchResult.Summary.TotalSuccessfulRecords = batchResult.FileResults.Sum(fr => fr.ImportResult.SuccessfulRecords);
+            batchResult.Summary.TotalFailedRecords = batchResult.FileResults.Sum(fr => fr.ImportResult.FailedRecords);
+            batchResult.Summary.TotalProcessingTime = batchResult.EndTime.Value - batchResult.StartTime;
+
+            // Determine overall status
+            if (batchResult.FailedFiles == 0)
+            {
+                batchResult.OverallStatus = ImportStatus.Completed;
+                batchResult.Message = $"All {batchResult.TotalFiles} files imported successfully";
+            }
+            else if (batchResult.SuccessfulFiles == 0)
+            {
+                batchResult.OverallStatus = ImportStatus.Failed;
+                batchResult.Message = $"All {batchResult.TotalFiles} files failed to import";
+            }
+            else
+            {
+                batchResult.OverallStatus = ImportStatus.Completed;
+                batchResult.Message = $"{batchResult.SuccessfulFiles}/{batchResult.TotalFiles} files imported successfully";
+            }
+
+            _logger.LogInformation("Batch import completed. BatchId: {BatchId}, Status: {Status}, Files: {SuccessfulFiles}/{TotalFiles}", 
+                batchId, batchResult.OverallStatus, batchResult.SuccessfulFiles, batchResult.TotalFiles);
+
+            return batchResult;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Batch import failed. BatchId: {BatchId}", batchId);
+            
+            batchResult.OverallStatus = ImportStatus.Failed;
+            batchResult.Message = $"Batch import failed: {ex.Message}";
+            batchResult.EndTime = DateTime.UtcNow;
+            
+            return batchResult;
+        }
+    }
+
+    /// <summary>
+    /// Cancel a batch import operation
+    /// </summary>
+    public async Task<bool> CancelBatchImportAsync(Guid batchId)
+    {
+        // In a real implementation, this would cancel all ongoing imports in the batch
+        _logger.LogInformation("Cancelling batch import: {BatchId}", batchId);
+        
+        // Cancel individual imports that are part of this batch
+        // This would require tracking which imports belong to which batch
+        
+        return await Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Get batch import progress
+    /// </summary>
+    public async Task<BatchImportProgress?> GetBatchImportProgressAsync(Guid batchId)
+    {
+        // In a real implementation, this would retrieve from persistent storage
+        // For now, return null as we don't have persistent batch progress storage
+        return await Task.FromResult<BatchImportProgress?>(null);
+    }    /// <summary>
+    /// Process a single file within a batch import
+    /// </summary>
+    private async Task<FileImportResult> ProcessSingleFileInBatch(IFormFile file, int fileIndex, ImportOptions options, BatchImportProgress batchProgress)
+    {
+        var fileResult = new FileImportResult
+        {
+            FileName = file.FileName,
+            FileIndex = fileIndex,
+            FileSizeBytes = file.Length,
+            DetectedFormat = DetectFileFormat(file)
+        };
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            
+            // Route to appropriate import method based on detected format
+            if (fileResult.DetectedFormat == "csv")
+            {
+                // Use a new scope to get a fresh DbContext for this file
+                using var scope = _serviceScopeFactory.CreateScope();
+                var scopedImportService = scope.ServiceProvider.GetRequiredService<IDataImportService>();
+                
+                // Ensure we're not using the current service (which would use the same DbContext)
+                // Instead create a new CsvDataImportService with scoped services
+                var scopedContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+                var scopedValidationService = scope.ServiceProvider.GetRequiredService<IDataValidationService>();
+                var scopedBackupService = scope.ServiceProvider.GetRequiredService<IBackupService>();
+                
+                var scopedService = new CsvDataImportService(
+                    _serviceScopeFactory,
+                    scopedContext,
+                    scopedValidationService,
+                    scopedBackupService,
+                    _logger);
+                
+                fileResult.ImportResult = await scopedService.ImportCsvAsync(stream, file.FileName, options);
+            }
+            else if (fileResult.DetectedFormat == "json")
+            {
+                // For now, return error since JSON import would need the JsonDataImportService
+                fileResult.ImportResult = new ImportResult
+                {
+                    ImportId = Guid.NewGuid(),
+                    Status = ImportStatus.Failed,
+                    Message = "JSON import is not supported by CSV service",
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
+                };
+            }
+            else
+            {
+                fileResult.ImportResult = new ImportResult
+                {
+                    ImportId = Guid.NewGuid(),
+                    Status = ImportStatus.Failed,
+                    Message = $"Unsupported file format: {fileResult.DetectedFormat}",
+                    StartTime = DateTime.UtcNow,
+                    EndTime = DateTime.UtcNow
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing file {FileName} in batch", file.FileName);
+            
+            fileResult.ImportResult = new ImportResult
+            {
+                ImportId = Guid.NewGuid(),
+                Status = ImportStatus.Failed,
+                Message = $"Error processing file: {ex.Message}",
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow
+            };
+        }
+
+        return fileResult;
+    }
+
+    /// <summary>
+    /// Detect file format based on content and extension
+    /// </summary>
+    private string DetectFileFormat(IFormFile file)
+    {
+        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        
+        // Check extension first
+        if (fileExtension == ".csv" || fileExtension == ".txt")
+        {
+            return "csv";
+        }
+        
+        if (fileExtension == ".json")
+        {
+            return "json";
+        }
+
+        // If extension is unclear, peek at content
+        try
+        {
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            
+            var firstLine = reader.ReadLine()?.Trim();
+            
+            if (string.IsNullOrEmpty(firstLine))
+            {
+                return "unknown";
+            }
+
+            // Check if it looks like JSON
+            if (firstLine.StartsWith("{") || firstLine.StartsWith("["))
+            {
+                return "json";
+            }
+
+            // Check if it looks like CSV (contains commas)
+            if (firstLine.Contains(','))
+            {
+                return "csv";
+            }
+
+            return "unknown";
+        }
+        catch
+        {
+            return "unknown";
+        }
     }
 }
 

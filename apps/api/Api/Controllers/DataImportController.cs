@@ -13,16 +13,21 @@ namespace Api.Controllers;
 [Route("api/[controller]")]
 [Produces("application/json")]
 public class DataImportController : ControllerBase
-{    private readonly IDataImportService _importService;
+{
+    private readonly IDataImportService _importService;
     private readonly IJsonDataImportService _jsonImportService;
     private readonly IImportJobService _importJobService;
     private readonly IDataValidationService _validationService;
+    private readonly IAutoImportService _autoImportService;
     private readonly FinanceDbContext _context;
-    private readonly ILogger<DataImportController> _logger;    public DataImportController(
+    private readonly ILogger<DataImportController> _logger;
+
+    public DataImportController(
         IDataImportService importService,
         IJsonDataImportService jsonImportService,
         IImportJobService importJobService,
         IDataValidationService validationService,
+        IAutoImportService autoImportService,
         FinanceDbContext context,
         ILogger<DataImportController> logger)
     {
@@ -30,6 +35,7 @@ public class DataImportController : ControllerBase
         _jsonImportService = jsonImportService;
         _importJobService = importJobService;
         _validationService = validationService;
+        _autoImportService = autoImportService;
         _context = context;
         _logger = logger;
     }
@@ -428,6 +434,242 @@ public class DataImportController : ControllerBase
     }
 
     /// <summary>
+    /// Import multiple files as a batch
+    /// </summary>
+    /// <param name="request">Batch import request with multiple files and options</param>
+    /// <returns>Batch import result with status for each file</returns>
+    /// <response code="200">Batch import completed (check individual file statuses)</response>
+    /// <response code="400">Invalid request</response>
+    /// <response code="500">Internal server error during batch import</response>
+    [HttpPost("batch")]
+    [ProducesResponseType(typeof(BatchImportResult), 200)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<BatchImportResult>> ImportBatch([FromForm] BatchImportRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Batch import requested for {FileCount} files", request.Files.Count);
+
+            // Validate request
+            if (request.Files == null || request.Files.Count == 0)
+            {
+                return BadRequest("No files provided for batch import");
+            }
+
+            if (request.Files.Count > 100) // Limit batch size
+            {
+                return BadRequest("Batch import is limited to 100 files maximum");
+            }
+
+            // Validate individual files
+            var validationErrors = new List<string>();
+            var totalSize = 0L;
+
+            foreach (var file in request.Files)
+            {
+                if (file.Length == 0)
+                {
+                    validationErrors.Add($"File '{file.FileName}' is empty");
+                    continue;
+                }
+
+                if (file.Length > 100 * 1024 * 1024) // 100MB per file limit
+                {
+                    validationErrors.Add($"File '{file.FileName}' exceeds 100MB limit");
+                    continue;
+                }
+
+                totalSize += file.Length;
+
+                var allowedExtensions = new[] { ".csv", ".txt", ".json" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    validationErrors.Add($"File '{file.FileName}' has unsupported format. Allowed: {string.Join(", ", allowedExtensions)}");
+                }
+            }
+
+            if (totalSize > 1024 * 1024 * 1024) // 1GB total limit
+            {
+                validationErrors.Add("Total batch size exceeds 1GB limit");
+            }
+
+            if (validationErrors.Any())
+            {
+                return BadRequest(new { Errors = validationErrors });
+            }
+
+            // Validate concurrency settings
+            if (request.MaxConcurrency < 1 || request.MaxConcurrency > 10)
+            {
+                request.MaxConcurrency = Math.Min(Math.Max(request.MaxConcurrency, 1), 10);
+            }
+
+            // Process batch import
+            var result = await _importService.ImportBatchAsync(
+                request.Files, 
+                request.Options, 
+                request.ProcessInParallel, 
+                request.MaxConcurrency);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during batch import for {FileCount} files", request.Files?.Count ?? 0);
+            return StatusCode(500, "An error occurred during batch import");
+        }
+    }
+
+    /// <summary>
+    /// Import multiple files as a batch using background job
+    /// </summary>
+    /// <param name="request">Batch import request with multiple files and options</param>
+    /// <returns>Job ID for tracking the batch import progress</returns>
+    /// <response code="202">Batch import job started successfully</response>
+    /// <response code="400">Invalid request</response>
+    [HttpPost("batch/async")]
+    [ProducesResponseType(typeof(object), 202)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    public async Task<ActionResult> ImportBatchAsync([FromForm] BatchImportRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Async batch import requested for {FileCount} files", request.Files.Count);
+
+            // Same validation as synchronous batch import
+            if (request.Files == null || request.Files.Count == 0)
+            {
+                return BadRequest("No files provided for batch import");
+            }
+
+            if (request.Files.Count > 100)
+            {
+                return BadRequest("Batch import is limited to 100 files maximum");
+            }
+
+            // Validate individual files
+            var validationErrors = new List<string>();
+            var totalSize = 0L;
+
+            foreach (var file in request.Files)
+            {
+                if (file.Length == 0)
+                {
+                    validationErrors.Add($"File '{file.FileName}' is empty");
+                    continue;
+                }
+
+                if (file.Length > 100 * 1024 * 1024)
+                {
+                    validationErrors.Add($"File '{file.FileName}' exceeds 100MB limit");
+                    continue;
+                }
+
+                totalSize += file.Length;
+
+                var allowedExtensions = new[] { ".csv", ".txt", ".json" };
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    validationErrors.Add($"File '{file.FileName}' has unsupported format. Allowed: {string.Join(", ", allowedExtensions)}");
+                }
+            }
+
+            if (totalSize > 1024 * 1024 * 1024)
+            {
+                validationErrors.Add("Total batch size exceeds 1GB limit");
+            }
+
+            if (validationErrors.Any())
+            {
+                return BadRequest(new { Errors = validationErrors });
+            }
+
+            // Validate concurrency settings
+            if (request.MaxConcurrency < 1 || request.MaxConcurrency > 10)
+            {
+                request.MaxConcurrency = Math.Min(Math.Max(request.MaxConcurrency, 1), 10);
+            }
+
+            // Schedule background job
+            var jobId = _importJobService.ScheduleBatchImport(
+                request.Files, 
+                request.Options, 
+                request.ProcessInParallel, 
+                request.MaxConcurrency);
+
+            return Accepted(new { JobId = jobId, Message = "Batch import job started successfully", FileCount = request.Files.Count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error scheduling async batch import for {FileCount} files", request.Files?.Count ?? 0);
+            return StatusCode(500, "An error occurred while scheduling batch import");
+        }
+    }
+
+    /// <summary>
+    /// Get batch import progress by ID
+    /// </summary>
+    /// <param name="batchId">Batch import operation ID</param>
+    /// <returns>Current batch import progress</returns>
+    /// <response code="200">Progress retrieved successfully</response>
+    /// <response code="404">Batch import not found</response>
+    [HttpGet("batch/progress/{batchId}")]
+    [ProducesResponseType(typeof(BatchImportProgress), 200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult<BatchImportProgress>> GetBatchImportProgress(Guid batchId)
+    {
+        try
+        {
+            var progress = await _importService.GetBatchImportProgressAsync(batchId);
+            
+            if (progress == null)
+            {
+                return NotFound($"Batch import with ID {batchId} not found");
+            }
+
+            return Ok(progress);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving batch import progress for ID: {BatchId}", batchId);
+            return StatusCode(500, "An error occurred while retrieving batch import progress");
+        }
+    }
+
+    /// <summary>
+    /// Cancel an ongoing batch import operation
+    /// </summary>
+    /// <param name="batchId">Batch import operation ID</param>
+    /// <returns>Success status</returns>
+    /// <response code="200">Batch import cancelled successfully</response>
+    /// <response code="404">Batch import not found</response>
+    [HttpPost("batch/cancel/{batchId}")]
+    [ProducesResponseType(typeof(object), 200)]
+    [ProducesResponseType(404)]
+    public async Task<ActionResult> CancelBatchImport(Guid batchId)
+    {
+        try
+        {
+            var success = await _importService.CancelBatchImportAsync(batchId);
+            
+            if (!success)
+            {
+                return NotFound($"Batch import with ID {batchId} not found or cannot be cancelled");
+            }
+
+            return Ok(new { Message = "Batch import cancelled successfully", BatchId = batchId });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error cancelling batch import for ID: {BatchId}", batchId);
+            return StatusCode(500, "An error occurred while cancelling the batch import");
+        }
+    }
+
+    /// <summary>
     /// Detect file format based on content and extension
     /// </summary>
     private string DetectFileFormat(IFormFile file)
@@ -473,6 +715,91 @@ public class DataImportController : ControllerBase
         catch
         {
             return "unknown";
+        }
+    }
+
+    /// <summary>
+    /// Auto-import historical data from ExampleData folder
+    /// </summary>
+    /// <param name="options">Auto-import options including batch size</param>
+    /// <returns>Auto-import result with detailed status for each file</returns>
+    /// <response code="200">Auto-import completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="500">Internal server error during auto-import</response>
+    [HttpPost("auto-import")]
+    [ProducesResponseType(typeof(AutoImportResult), 200)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<AutoImportResult>> AutoImportAsync([FromBody] AutoImportOptions? options = null)
+    {
+        try
+        {
+            _logger.LogInformation("Starting auto-import process");
+
+            var importOptions = options ?? new AutoImportOptions();
+            
+            // Validate batch size
+            if (importOptions.BatchSize <= 0 || importOptions.BatchSize > 50)
+            {
+                return BadRequest("Batch size must be between 1 and 50");
+            }
+
+            var result = await _autoImportService.DiscoverAndImportAsync(importOptions);
+            
+            _logger.LogInformation("Auto-import completed with status: {Status}", result.Status);
+            
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during auto-import");
+            return StatusCode(500, "An error occurred during auto-import process");
+        }
+    }
+
+    /// <summary>
+    /// Get list of available files in ExampleData folder
+    /// </summary>
+    /// <returns>List of available CSV files</returns>
+    /// <response code="200">List retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("auto-import/available-files")]
+    [ProducesResponseType(typeof(List<string>), 200)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<List<string>>> GetAvailableFilesAsync()
+    {
+        try
+        {
+            var files = await _autoImportService.GetAvailableFilesAsync();
+            return Ok(files);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving available files");
+            return StatusCode(500, "An error occurred while retrieving available files");
+        }
+    }
+
+    /// <summary>
+    /// Get list of files that haven't been imported yet
+    /// </summary>
+    /// <returns>List of unimported CSV files</returns>
+    /// <response code="200">List retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("auto-import/unimported-files")]
+    [ProducesResponseType(typeof(List<string>), 200)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<List<string>>> GetUnimportedFilesAsync()
+    {
+        try
+        {
+            var files = await _autoImportService.GetUnimportedFilesAsync();
+            return Ok(files);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving unimported files");
+            return StatusCode(500, "An error occurred while retrieving unimported files");
         }
     }
 }

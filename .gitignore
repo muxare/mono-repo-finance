@@ -461,3 +461,6 @@ MigrationBackup/
 
 # Database connection files with actual database names
 Data Source=*
+
+# Ignore example finance data files
+apps/api/Api/ExampleData/*.txt
