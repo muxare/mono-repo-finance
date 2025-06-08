@@ -28,7 +28,7 @@ public interface IStatisticalAnalysisService
     /// Calculate beta coefficient relative to market index
     /// </summary>
     /// <param name="stockId">Stock identifier</param>
-    /// <param name="marketSymbol">Market index symbol (e.g., "SPY" for S&P 500)</param>
+    /// <param name="marketSymbol">Market index symbol (e.g., "SPY" for S&amp;P 500)</param>
     /// <param name="days">Number of days for calculation (default 252)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Beta coefficient</returns>

@@ -3,6 +3,7 @@ using Api.Services;
 using Api.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Api.Controllers.Base;
 
 namespace Api.Controllers;
 
@@ -12,15 +13,13 @@ namespace Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class DataImportController : ControllerBase
-{
-    private readonly IDataImportService _importService;
+public class DataImportController : BaseController
+{    private readonly IDataImportService _importService;
     private readonly IJsonDataImportService _jsonImportService;
     private readonly IImportJobService _importJobService;
     private readonly IDataValidationService _validationService;
     private readonly IAutoImportService _autoImportService;
     private readonly FinanceDbContext _context;
-    private readonly ILogger<DataImportController> _logger;
 
     public DataImportController(
         IDataImportService importService,
@@ -29,7 +28,7 @@ public class DataImportController : ControllerBase
         IDataValidationService validationService,
         IAutoImportService autoImportService,
         FinanceDbContext context,
-        ILogger<DataImportController> logger)
+        ILogger<DataImportController> logger) : base(logger)
     {
         _importService = importService;
         _jsonImportService = jsonImportService;
@@ -37,7 +36,6 @@ public class DataImportController : ControllerBase
         _validationService = validationService;
         _autoImportService = autoImportService;
         _context = context;
-        _logger = logger;
     }
 
     /// <summary>
@@ -53,8 +51,7 @@ public class DataImportController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ImportResult>> ImportCsv([FromForm] CsvImportRequest request)
-    {
-        try
+    {        try
         {
             _logger.LogInformation("CSV import requested for file: {FileName} ({FileSize} bytes)", 
                 request.File.FileName, request.File.Length);
@@ -62,37 +59,37 @@ public class DataImportController : ControllerBase
             // Validate file
             if (request.File.Length == 0)
             {
-                return BadRequest("File is empty");
+                return BadRequestError("File is empty");
             }
 
             if (request.File.Length > 100 * 1024 * 1024) // 100MB limit
             {
-                return BadRequest("File size exceeds 100MB limit");
+                return BadRequestError("File size exceeds 100MB limit");
             }
 
             var allowedExtensions = new[] { ".csv", ".txt" };
             var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
             if (!allowedExtensions.Contains(fileExtension))
             {
-                return BadRequest($"File type not supported. Allowed types: {string.Join(", ", allowedExtensions)}");
-            }            // Process import
+                return BadRequestError($"File type not supported. Allowed types: {string.Join(", ", allowedExtensions)}");
+            }
+
+            // Process import
             using var stream = request.File.OpenReadStream();
             var result = await _importService.ImportCsvAsync(stream, request.File.FileName, request.Options);
-            
             return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during CSV import for file: {FileName}", request.File?.FileName);
-            return StatusCode(500, "An error occurred during import");
+            return InternalServerError("An error occurred during import", ex.Message);
         }
     }
     /// <summary>
     /// Import stock price data from CSV file using background job
     /// </summary>
     /// <param name="request">CSV import request with file and options</param>
-    /// <returns>Job ID for tracking the import progress</returns>
-    /// <response code="202">Import job started successfully</response>
+    /// <returns>Job ID for tracking the import progress</returns>    /// <response code="202">Import job started successfully</response>
     /// <response code="400">Invalid request</response>
     [HttpPost("csv/async")]
     [ProducesResponseType(typeof(object), 202)]
@@ -107,19 +104,19 @@ public class DataImportController : ControllerBase
             // Validate file (same as sync version)
             if (request.File.Length == 0)
             {
-                return BadRequest("File is empty");
+                return BadRequestError("File is empty");
             }
 
             if (request.File.Length > 100 * 1024 * 1024) // 100MB limit
             {
-                return BadRequest("File size exceeds 100MB limit");
+                return BadRequestError("File size exceeds 100MB limit");
             }
 
             var allowedExtensions = new[] { ".csv", ".txt" };
             var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
             if (!allowedExtensions.Contains(fileExtension))
             {
-                return BadRequest($"File type not supported. Allowed types: {string.Join(", ", allowedExtensions)}");
+                return BadRequestError($"File type not supported. Allowed types: {string.Join(", ", allowedExtensions)}");
             }
 
             // Schedule background job
@@ -131,7 +128,7 @@ public class DataImportController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error scheduling async CSV import for file: {FileName}", request.File?.FileName);
-            return StatusCode(500, "An error occurred while scheduling import");
+            return InternalServerError("An error occurred while scheduling import", ex.Message);
         }
     }
 
@@ -270,7 +267,7 @@ public class DataImportController : ControllerBase
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                return BadRequest("File path is required");
+                return BadRequestError("File path is required");
             }
 
             _logger.LogInformation("File import requested for: {FilePath}", filePath);
@@ -289,84 +286,7 @@ public class DataImportController : ControllerBase
             _logger.LogError(ex, "Error during file import for: {FilePath}", filePath);
             return StatusCode(500, "An error occurred during import");
         }
-    }    /*
-    /// <summary>
-    /// Import stock price data from JSON file
-    /// </summary>
-    /// <param name="request">JSON import request with file and options</param>
-    /// <returns>Import result with status and statistics</returns>
-    /// <response code="200">Import completed successfully</response>
-    /// <response code="400">Invalid request or validation errors</response>
-    /// <response code="500">Internal server error during import</response>
-    [HttpPost("json")]
-    [ProducesResponseType(typeof(ImportResult), 200)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ImportResult>> ImportJson([FromForm] CsvImportRequest request)
-    {
-        try
-        {
-            _logger.LogInformation("JSON import requested for file: {FileName} ({FileSize} bytes)", 
-                request.File.FileName, request.File.Length);
-
-            // Validate file
-            if (request.File.Length == 0)
-            {
-                return BadRequest("File is empty");
-            }
-
-            if (request.File.Length > 100 * 1024 * 1024) // 100MB limit
-            {
-                return BadRequest("File size exceeds 100MB limit");
-            }
-
-            var allowedExtensions = new[] { ".json" };
-            var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(fileExtension))
-            {
-                return BadRequest($"File type not supported. Allowed types: {string.Join(", ", allowedExtensions)}");
-            }            // Process import
-            using var stream = request.File.OpenReadStream();
-            var result = await _jsonImportService.ImportJsonAsync(stream, request.File.FileName, request.Options);
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during JSON import for file: {FileName}", request.File?.FileName);
-            return StatusCode(500, "An error occurred during import");
-        }
     }
-
-    /// <summary>
-    /// Validate JSON file without importing
-    /// </summary>
-    /// <param name="request">JSON validation request</param>
-    /// <returns>Validation result with any errors found</returns>
-    /// <response code="200">Validation completed</response>
-    /// <response code="400">Invalid request</response>
-    [HttpPost("json/validate")]
-    [ProducesResponseType(typeof(ImportResult), 200)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
-    public async Task<ActionResult<ImportResult>> ValidateJson([FromForm] CsvImportRequest request)
-    {
-        try
-        {
-            _logger.LogInformation("JSON validation requested for file: {FileName}", request.File.FileName);            // Set validation-only option
-            request.Options.ValidateOnly = true;
-
-            using var stream = request.File.OpenReadStream();
-            var result = await _jsonImportService.ImportJsonAsync(stream, request.File.FileName, request.Options);
-
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during JSON validation for file: {FileName}", request.File?.FileName);
-            return StatusCode(500, "An error occurred during validation");
-        }
-    }
-    */
 
     /// <summary>
     /// Auto-detect file format and import data
@@ -706,12 +626,11 @@ public class DataImportController : ControllerBase
                 return "json";
             }
 
-            // Check if it looks like CSV (contains commas)            if (firstLine.Contains(','))
+            // Check if it looks like CSV (contains commas)
+            if (firstLine.Contains(','))
             {
                 return "csv";
-            }
-            
-            return "unknown";
+            }            return "unknown";
         }
         catch
         {

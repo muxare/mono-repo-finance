@@ -67,6 +67,7 @@ builder.Services.AddScoped<IPriceCalculationService, PriceCalculationService>();
 builder.Services.AddScoped<ITechnicalIndicatorService, TechnicalIndicatorService>();
 builder.Services.AddScoped<IStatisticalAnalysisService, StatisticalAnalysisService>();
 builder.Services.AddScoped<ICalculationJobService, CalculationJobService>();
+builder.Services.AddScoped<IMarketAnalysisService, MarketAnalysisService>();
 
 // Add memory caching for calculations
 builder.Services.AddMemoryCache();

@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Api.Models;
+using Api.Controllers.Base;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TodosController : ControllerBase
+public class TodosController : BaseController
 {
     private static readonly List<Todo> Todos = new()
     {
@@ -14,19 +15,21 @@ public class TodosController : ControllerBase
         new() { Id = 3, Title = "Setup Monorepo", Description = "Setup a monorepo with Nx", IsCompleted = true, CompletedAt = DateTime.UtcNow.AddHours(-2) }
     };
 
+    public TodosController(ILogger<TodosController> logger) : base(logger)
+    {
+    }
+
     [HttpGet]
     public ActionResult<IEnumerable<Todo>> GetTodos()
     {
         return Ok(Todos);
-    }
-
-    [HttpGet("{id}")]
+    }    [HttpGet("{id}")]
     public ActionResult<Todo> GetTodo(int id)
     {
         var todo = Todos.FirstOrDefault(t => t.Id == id);
         if (todo == null)
         {
-            return NotFound();
+            return NotFoundError($"Todo with ID {id} not found");
         }
         return Ok(todo);
     }
@@ -45,15 +48,13 @@ public class TodosController : ControllerBase
 
         Todos.Add(todo);
         return CreatedAtAction(nameof(GetTodo), new { id = todo.Id }, todo);
-    }
-
-    [HttpPut("{id}")]
+    }    [HttpPut("{id}")]
     public ActionResult<Todo> UpdateTodo(int id, [FromBody] UpdateTodoRequest request)
     {
         var todo = Todos.FirstOrDefault(t => t.Id == id);
         if (todo == null)
         {
-            return NotFound();
+            return NotFoundError($"Todo with ID {id} not found");
         }
 
         todo.Title = request.Title;
@@ -70,15 +71,13 @@ public class TodosController : ControllerBase
         }
 
         return Ok(todo);
-    }
-
-    [HttpDelete("{id}")]
+    }    [HttpDelete("{id}")]
     public ActionResult DeleteTodo(int id)
     {
         var todo = Todos.FirstOrDefault(t => t.Id == id);
         if (todo == null)
         {
-            return NotFound();
+            return NotFoundError($"Todo with ID {id} not found");
         }
 
         Todos.Remove(todo);

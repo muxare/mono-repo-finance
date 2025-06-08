@@ -1,5 +1,6 @@
 using Api.Models.DTOs;
 using Api.Services;
+using Api.Controllers.Base;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -10,16 +11,14 @@ namespace Api.Controllers;
 [ApiController]
 [Route("api/stocks")]
 [Produces("application/json")]
-public class StocksController : ControllerBase
+public class StocksController : BaseController
 {
     private readonly IStockService _stockService;
-    private readonly ILogger<StocksController> _logger;
 
-    public StocksController(IStockService stockService, ILogger<StocksController> logger)
+    public StocksController(IStockService stockService, ILogger<StocksController> logger) : base(logger)
     {
         _stockService = stockService;
-        _logger = logger;
-    }    /// <summary>
+    }/// <summary>
     /// Retrieves a paginated list of stocks with optional filtering and sorting
     /// </summary>
     /// <param name="parameters">Query parameters for filtering, sorting, and pagination</param>
@@ -72,25 +71,25 @@ public class StocksController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<StockDto>> GetStockBySymbol(string symbol)
     {
-        try
-        {
+        try        {
             if (string.IsNullOrWhiteSpace(symbol))
             {
-                return BadRequest("Stock symbol is required");
+                return BadRequestError("Stock symbol is required");
             }
 
             var stock = await _stockService.GetStockBySymbolAsync(symbol);
             
             if (stock == null)
             {
-                return NotFound($"Stock with symbol '{symbol}' not found");
+                return NotFoundError($"Stock with symbol '{symbol}' not found");
             }
 
             return Ok(stock);
-        }        catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while fetching stock by symbol: {Symbol}", symbol);
-            return StatusCode(500, "An error occurred while processing your request");
+            return InternalServerError("An error occurred while processing your request", ex.Message);
         }
     }
 

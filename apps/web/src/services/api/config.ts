@@ -11,15 +11,15 @@ const getBaseURL = (): string => {
     // Browser environment
     const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       if (isDevelopment) {
-      // Development: API runs on port 5042
-      return 'http://localhost:5042';
+      // Development: API runs on port 7003 (HTTPS) or 5043 (HTTP)
+      return 'https://localhost:7003';
     } else {
       // Production: API on same origin with /api prefix
       return window.location.origin + '/api';
     }
   }
     // Server-side rendering fallback
-  return process.env.VITE_API_BASE_URL || 'http://localhost:5042';
+  return process.env.VITE_API_BASE_URL || 'https://localhost:7003';
 };
 
 export const DEFAULT_API_CONFIG: ApiClientConfig = {
