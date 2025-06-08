@@ -1,0 +1,45 @@
+{
+    "name": "@monorepo/shared-config",
+    "version": "0.1.0",
+    "description": "Shared configuration and constants for the monorepo",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup src/index.ts --format cjs,esm --dts --external @monorepo/shared-types",
+        "dev": "tsup src/index.ts --format cjs,esm --dts --watch --external @monorepo/shared-types",
+        "clean": "rimraf dist *.tsbuildinfo",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix"
+    },
+    "dependencies": {
+        "@monorepo/shared-types": "workspace:*"
+    },
+    "devDependencies": {
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.3",
+        "rimraf": "^5.0.5",
+        "eslint": "^9.28.0",
+        "@types/node": "^22.15.29"
+    },
+    "keywords": [
+        "config",
+        "configuration",
+        "constants",
+        "shared",
+        "monorepo"
+    ]
+}

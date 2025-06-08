@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,10 +21,28 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./apps/*/src/*"],
-      "@libs/*": ["./libs/*/src/*"]
+      "@monorepo/shared-types": [
+        "./libs/shared-types/src"
+      ],
+      "@monorepo/shared-utils": [
+        "./libs/shared-utils/src"
+      ],
+      "@monorepo/shared-config": [
+        "./libs/shared-config/src"
+      ],
+      "@monorepo/shared-ui": [
+        "./libs/shared-ui/src"
+      ]
     }
   },
-  "include": ["apps/**/*", "libs/**/*", "tools/**/*"],
-  "exclude": ["node_modules", "dist", "build"]
+  "include": [
+    "apps/**/*",
+    "libs/**/*",
+    "tools/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
 }

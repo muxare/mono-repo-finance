@@ -1,0 +1,47 @@
+{
+    "name": "@monorepo/shared-utils",
+    "version": "0.1.0",
+    "description": "Shared utility functions and helpers for the monorepo",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup src/index.ts --format cjs,esm --dts",
+        "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+        "clean": "rimraf dist *.tsbuildinfo",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest",
+        "test:watch": "vitest --watch",
+        "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix"
+    },
+    "dependencies": {
+        "@monorepo/shared-types": "workspace:*"
+    },
+    "devDependencies": {
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.3",
+        "vitest": "^1.2.1",
+        "rimraf": "^5.0.5",
+        "eslint": "^9.28.0"
+    },
+    "keywords": [
+        "utils",
+        "utilities",
+        "helpers",
+        "shared",
+        "monorepo"
+    ]
+}

@@ -16,6 +16,10 @@
     "clean": "rimraf dist .vite *.tsbuildinfo"
   },
   "dependencies": {
+    "@monorepo/shared-types": "workspace:*",
+    "@monorepo/shared-utils": "workspace:*",
+    "@monorepo/shared-config": "workspace:*",
+    "@monorepo/shared-ui": "workspace:*",
     "@microsoft/signalr": "^8.0.7",
     "@tanstack/react-query": "^5.80.6",
     "@tanstack/react-query-devtools": "^5.80.6",
