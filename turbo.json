@@ -1,0 +1,122 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "ui": "tui",
+    "tasks": {
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".env*",
+                "!.env*.local",
+                "!node_modules/**"
+            ],
+            "outputs": [
+                "dist/**",
+                "build/**",
+                ".next/**",
+                "!.next/cache/**",
+                "bin/**",
+                "obj/**"
+            ]
+        },
+        "test": {
+            "dependsOn": [
+                "build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "jest.config.*",
+                "vitest.config.*",
+                "playwright.config.*"
+            ],
+            "outputs": [
+                "coverage/**",
+                "test-results/**"
+            ]
+        },
+        "test:watch": {
+            "cache": false,
+            "persistent": true
+        },
+        "lint": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".eslintrc*",
+                "eslint.config.*"
+            ],
+            "outputs": []
+        },
+        "lint:fix": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".eslintrc*",
+                "eslint.config.*"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "format": {
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".prettierrc*",
+                "prettier.config.*"
+            ],
+            "outputs": [],
+            "cache": false
+        },
+        "format:check": {
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".prettierrc*",
+                "prettier.config.*"
+            ],
+            "outputs": []
+        },
+        "typecheck": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "tsconfig*.json"
+            ],
+            "outputs": [
+                "*.tsbuildinfo"
+            ]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true
+        },
+        "serve": {
+            "cache": false,
+            "persistent": true
+        },
+        "clean": {
+            "cache": false,
+            "outputs": []
+        }
+    },
+    "globalDependencies": [
+        ".env*",
+        "tsconfig.json",
+        ".eslintrc*",
+        ".prettierrc*",
+        "nx.json",
+        "package.json"
+    ],
+    "globalEnv": [
+        "NODE_ENV",
+        "CI",
+        "VERCEL",
+        "DATABASE_URL"
+    ]
+}

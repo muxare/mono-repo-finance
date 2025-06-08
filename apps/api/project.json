@@ -16,7 +16,8 @@
           "cwd": "apps/api/Api"
         }
       }
-    },    "serve": {
+    },
+    "serve": {
       "executor": "nx:run-commands",
       "options": {
         "command": "dotnet run --launch-profile https",
@@ -36,7 +37,24 @@
         "command": "dotnet clean",
         "cwd": "apps/api/Api"
       }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet format",
+        "cwd": "apps/api/Api"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet format --verify-no-changes",
+        "cwd": "apps/api/Api"
+      }
     }
   },
-  "tags": ["type:app", "platform:dotnet"]
+  "tags": [
+    "type:app",
+    "platform:dotnet"
+  ]
 }

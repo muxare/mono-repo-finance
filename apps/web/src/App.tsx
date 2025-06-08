@@ -1,16 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { FinancialDataProvider } from './contexts/FinancialDataContext';
-import { FinancialDataErrorBoundary } from './components/FinancialDataErrorBoundary';
-import { TodoList } from './components/TodoList';
-import { FinancialDataDemo } from './components/FinancialDataDemo';
-import { ContextApiTest } from './components/ContextApiTest';
-import CandlestickChartDemo from './components/CandlestickChartDemo';
-import { EmaFanDemo } from './components/EmaFanDemo';
+import { useEffect, useState } from 'react';
+import './App.css';
 import { ApiTrafficMonitor } from './components/ApiTrafficMonitor';
 import { ComponentErrorBoundary } from './components/ComponentErrorBoundary';
+import { EmaFanDemo } from './components/EmaFanDemo';
+import { FinancialDataErrorBoundary } from './components/FinancialDataErrorBoundary';
+import { FinancialDataProvider } from './contexts/FinancialDataContext';
 import { setupApiInterceptor } from './utils/apiInterceptor';
-import { useState, useEffect } from 'react';
-import './App.css';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -45,14 +41,14 @@ function App() {
                 <EmaFanDemo />
               </ComponentErrorBoundary>
             </main>
-            
+
             <footer className="app-footer">
               <p>Built with ❤️ using .NET Core, React, TypeScript, and Vite</p>
             </footer>
-            
+
             {/* Development API Monitor - only show in development */}
             {import.meta.env.DEV && (
-              <ApiTrafficMonitor 
+              <ApiTrafficMonitor
                 isVisible={isApiMonitorVisible}
                 onToggle={() => setIsApiMonitorVisible(!isApiMonitorVisible)}
               />

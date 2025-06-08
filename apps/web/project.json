@@ -38,7 +38,31 @@
         "command": "pnpm run lint",
         "cwd": "apps/web"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run typecheck",
+        "cwd": "apps/web"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run format",
+        "cwd": "apps/web"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run format:check",
+        "cwd": "apps/web"
+      }
     }
   },
-  "tags": ["type:app", "platform:web"]
+  "tags": [
+    "type:app",
+    "platform:web"
+  ]
 }

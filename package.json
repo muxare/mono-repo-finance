@@ -1,8 +1,22 @@
 {
   "name": "monorepo",
   "version": "1.0.0",
-  "description": "A monorepo with .NET Core and React TypeScript",
+  "description": "A monorepo with .NET Core API and React TypeScript frontend",
   "private": true,
+  "keywords": [
+    "monorepo",
+    "nx",
+    "react",
+    "typescript",
+    "dotnet",
+    "finance"
+  ],
+  "author": "Your Team",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "workspaces": [
     "apps/*",
     "libs/*",
@@ -10,8 +24,15 @@
   ],
   "scripts": {
     "build": "nx run-many --target=build --projects=api,web",
+    "build:affected": "nx affected --target=build",
+    "build:turbo": "turbo build",
+    "build:turbo:force": "turbo build --force",
     "test": "nx run-many --target=test --projects=api,web",
+    "test:affected": "nx affected --target=test",
+    "test:turbo": "turbo test",
+    "test:watch": "nx run-many --target=test --projects=api,web --watch",
     "dev": "concurrently \"pnpm nx run api:serve\" \"pnpm nx run web:serve\"",
+    "dev:turbo": "turbo dev",
     "dev:api": "nx serve api",
     "dev:web": "nx serve web",
     "dev:clean": "pwsh -Command \"Get-Process -Name 'dotnet','node' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host 'Cleaned up development processes'\"",
@@ -20,8 +41,25 @@
     "dev:restart": "pwsh .\\scripts\\dev-manager.ps1 restart -Force",
     "dev:status": "pwsh .\\scripts\\dev-manager.ps1 status",
     "lint": "nx run-many --target=lint --projects=web",
+    "lint:affected": "nx affected --target=lint",
+    "lint:turbo": "turbo lint",
+    "lint:fix": "nx run-many --target=lint --projects=web --fix",
+    "lint:fix:turbo": "turbo lint:fix",
     "format": "prettier --write .",
-    "clean": "nx reset && rimraf node_modules apps/*/node_modules libs/*/node_modules"
+    "format:turbo": "turbo format",
+    "format:check": "prettier --check .",
+    "format:check:turbo": "turbo format:check",
+    "typecheck": "nx run-many --target=typecheck --projects=web",
+    "typecheck:turbo": "turbo typecheck",
+    "graph": "nx graph",
+    "graph:turbo": "turbo build --graph",
+    "clean": "nx reset && rimraf node_modules apps/*/node_modules libs/*/node_modules",
+    "clean:cache": "nx reset",
+    "clean:turbo": "turbo clean && rimraf .turbo",
+    "deps:update": "nx migrate latest && pnpm install && nx migrate --run-migrations",
+    "workspace:info": "nx report",
+    "turbo:prune": "turbo prune --scope",
+    "turbo:daemon": "turbo daemon"
   },
   "devDependencies": {
     "@nx/js": "^17.2.8",
@@ -29,11 +67,42 @@
     "@nx/vite": "^17.2.8",
     "@nx/web": "^17.2.8",
     "@nx/workspace": "^17.2.8",
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
     "concurrently": "^9.1.2",
+    "eslint": "^9.25.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
     "nx": "^17.2.8",
     "prettier": "^3.1.1",
     "rimraf": "^5.0.5",
+    "turbo": "^2.5.4",
     "typescript": "^5.3.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "typescript": "^5.3.3"
+    }
   },
   "packageManager": "pnpm@8.15.0"
 }
