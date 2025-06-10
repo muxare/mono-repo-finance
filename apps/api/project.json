@@ -24,6 +24,13 @@
         "cwd": "apps/api/Api"
       }
     },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet run --launch-profile https",
+        "cwd": "apps/api/Api"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "options": {

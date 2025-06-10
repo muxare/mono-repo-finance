@@ -33,6 +33,8 @@
     "test:watch": "nx run-many --target=test --projects=api,web --watch",
     "dev": "concurrently \"pnpm nx run api:serve\" \"pnpm nx run web:serve\"",
     "dev:turbo": "turbo dev",
+    "dev:turbo:web": "turbo dev --filter=!api",
+    "dev:both": "pwsh -ExecutionPolicy Bypass -File start-dev-servers.ps1",
     "dev:api": "nx serve api",
     "dev:web": "nx serve web",
     "dev:clean": "pwsh -Command \"Get-Process -Name 'dotnet','node' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host 'Cleaned up development processes'\"",

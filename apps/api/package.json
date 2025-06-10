@@ -1,0 +1,15 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "private": true,
+  "description": ".NET 8 Web API for financial data",
+  "scripts": {
+    "dev": "start-api.cmd",
+    "serve": "nx run api:serve",
+    "build": "echo 'API build delegated to Nx - see project.json'",
+    "test": "cd \"c:\\source\\repos\\MonoRepo\\apps\\api\\Api\" && dotnet test",
+    "clean": "cd \"c:\\source\\repos\\MonoRepo\\apps\\api\\Api\" && dotnet clean",
+    "format": "cd \"c:\\source\\repos\\MonoRepo\\apps\\api\\Api\" && dotnet format",
+    "format:check": "cd \"c:\\source\\repos\\MonoRepo\\apps\\api\\Api\" && dotnet format --verify-no-changes"
+  }
+}
